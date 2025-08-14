@@ -100,3 +100,34 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+
+Recomendaciones adicionales
+
+    Tipado explícito:
+    typescript
+
+// En tu user.entity.ts
+@Column({ nullable: true })
+avatar: string | null;
+
+Validación mejorada:
+typescript
+
+if (!user?.passwordResetExpires) {
+  throw new BadRequestException('Invalid token');
+}
+
+Utility Types (opcional):
+Crea un tipo para propiedades nulables:
+typescript
+
+type Nullable<T> = T | null;
+// Uso:
+@Column({ nullable: true })
+passwordResetToken: Nullable<string>;
+
+Me interesa profundizar en estas recomendaciones:
+1-Tipado explícito.
+2-Validación mejorada.
+3-Utility Types (opcional).
