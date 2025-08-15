@@ -7,3 +7,5 @@ declare global {
     }
   }
 }
+
+export type AuthenticatedRequest = Request & { user: User };
