@@ -74,11 +74,18 @@ export class User {
   })
   updatedAt!: Date;
 
+  /*@BeforeInsert()
+  async setVerifiedInDevelopment() {
+    if (process.env.NODE_ENV === 'development') {
+      this.isEmailVerified = true;
+    }
+  }*/
+
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword() {
-    if (this.password) {
-      this.password = await bcrypt.hash(this.password, 10);
+    if (this.password && !this.password.startsWith('$2b$')) {
+      this.password = await bcrypt.hash(this.password.trim(), 10);
     }
   }
 }

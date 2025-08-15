@@ -9,19 +9,24 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../users/entities/user.entity';
+import { UsersService } from '../users/users.service';
+import { MailService } from '../mail/mail.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
-import { MailService } from '../mail/mail.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { TokenBlacklistService } from './token-blacklist.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    private usersRepository: Repository<User>,    
+    private usersService: UsersService,
     private jwtService: JwtService,
     private mailService: MailService,
+    private readonly tokenBlacklist: TokenBlacklistService,
+    // private readonly configService: ConfigService,
   ) {}
 
   async signUp(signUpDto: SignUpDto): Promise<{ accessToken: string }> {
@@ -40,37 +45,56 @@ export class AuthService {
     });
 
     await this.usersRepository.save(user);
-
-    // Enviar email de verificación
-    await this.sendVerificationEmail(user);
+  
+    await this.sendVerificationEmail(user); // Send verification email
 
     return this.generateToken(user);
   }
 
   async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {
-    const { email, password } = signInDto;
-
-    const user = await this.usersRepository.findOne({ where: { email } });
+    const { email, password: rawPassword } = signInDto;
+    const password = rawPassword.trim();
+    const user = await this.usersService.findByEmail(email);
     if (!user) {
+      console.log('User not found');
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
+   
     if (!isPasswordValid) {
+      console.log('Password does not match');
       throw new UnauthorizedException('Invalid credentials');
     }
 
     if (!user.isEmailVerified) {
+      console.log('Email not verified');
       throw new UnauthorizedException('Please verify your email first');
     }
-
-    return this.generateToken(user);
+    
+    return this.generateToken(user); // Token generated successfully
   }
 
-  async logout(userId: string): Promise<void> {
-    // En una implementación real, podrías invalidar el token aquí
-    // Esto es solo un marcador de posición
-    console.log(`User ${userId} logged out`);
+  async logout(authorizationHeader: string, userId: string): Promise<{
+    message: string, tokenExpiresIn:string
+  }> {
+    const token = authorizationHeader?.replace('Bearer ', '');
+    if (!token) {
+      throw new UnauthorizedException('Invalid token');
+    }
+
+    // Calculates the remaining time of the token until expiration
+    const decoded = this.jwtService.decode(token) as { exp: number };
+    const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
+    
+    // Add the token to the blacklist
+    this.tokenBlacklist.add(token);    
+    console.log(`User ${userId} logged out. Token invalidated.`);
+
+    return { 
+      message: 'Logout successful',
+      tokenExpiresIn: `${expiresIn} seconds remaining` 
+    };
   }
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<void> {
@@ -78,7 +102,7 @@ export class AuthService {
 
     const user = await this.usersRepository.findOne({ where: { email } });
     if (!user) {
-      // Por seguridad, no revelamos si el email existe o no
+      // For security reasons, we do not reveal whether the email exists or not.
       return;
     }
 
@@ -87,7 +111,7 @@ export class AuthService {
       { expiresIn: '1h' },
     );
     user.passwordResetToken = resetToken;
-    user.passwordResetExpires = new Date(Date.now() + 3600000); // 1 hora
+    user.passwordResetExpires = new Date(Date.now() + 3600000); // one hour
 
     await this.usersRepository.save(user);
     await this.mailService.sendPasswordResetEmail(user.email, resetToken);
@@ -122,32 +146,32 @@ export class AuthService {
     await this.usersRepository.save(user);
   }
 
-  async verifyEmail(token: string): Promise<void> {
-    let payload;
+  async verifyEmail(token: string): Promise<{ message: string; }> {
     try {
-      payload = this.jwtService.verify(token);
+      const payload = this.jwtService.verify(token);
+
+      const user = await this.usersRepository.findOne({
+        where: { id: payload.sub, emailVerificationToken: token }
+      });
+
+      if (!user) {
+        throw new BadRequestException('Invalid token');
+      }
+
+      user.isEmailVerified = true;
+      user.emailVerificationToken = null;
+      await this.usersRepository.save(user);
+    
+      return { message: 'Email successfully verified' };
     } catch (error) {
       throw new BadRequestException('Invalid or expired token');
     }
-
-    const user = await this.usersRepository.findOne({
-      where: { id: payload.sub, emailVerificationToken: token },
-    });
-
-    if (!user) {
-      throw new BadRequestException('Invalid or expired token');
-    }
-
-    user.isEmailVerified = true;
-    user.emailVerificationToken = null;
-
-    await this.usersRepository.save(user);
   }
 
   private async sendVerificationEmail(user: User): Promise<void> {
     const token = this.jwtService.sign(
       { sub: user.id },
-      { expiresIn: '1d' }, // 1 día para verificar el email
+      { expiresIn: '1d' }, // one day to verify email
     );
 
     user.emailVerificationToken = token;

@@ -3,13 +3,14 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { User } from '../users/entities/user.entity';
+import jwtConfig from './config/jwt.config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
+import { TokenBlacklistService } from './token-blacklist.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { User } from '../users/entities/user.entity';
 import { UsersModule } from '../users/users.module';
 import { MailModule } from '../mail/mail.module';
-import jwtConfig from './config/jwt.config';
 
 @Module({
   imports: [
@@ -19,16 +20,16 @@ import jwtConfig from './config/jwt.config';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get('jwt.secret'),
-        signOptions: { expiresIn: configService.get('jwt.expiresIn') },
+        secret: configService.get('JWT_SECRET'),
+        signOptions: { expiresIn: configService.get('JWT_EXPIRES_IN') || '1h'},
       }),
     }),
     ConfigModule.forFeature(jwtConfig),
     UsersModule,
     MailModule
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, TokenBlacklistService],
   controllers: [AuthController],
-  exports: [JwtStrategy, PassportModule],
+  exports: [JwtStrategy, PassportModule, TokenBlacklistService],
 })
 export class AuthModule {}
