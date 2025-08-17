@@ -26,14 +26,13 @@ export default defineConfig({
         inline: [
           "@nestjs/core",
           "@nestjs/common",
-          "@nestjs/platform-express"
+          "@nestjs/platform-express",
+          /*"@nestjs/typeorm", 
+          "typeorm",
+          "bcrypt"*/
         ]
       }
     }
   },
   plugins: [tsconfigPaths()],
 });
-
-
-
-
