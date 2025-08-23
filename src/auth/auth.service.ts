@@ -139,7 +139,8 @@ export class AuthService {
       throw new BadRequestException('Token expired');
     }
 
-    user.password = newPassword;
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
     user.passwordResetToken = null;
     user.passwordResetExpires = null;
 
