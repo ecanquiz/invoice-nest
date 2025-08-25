@@ -4,13 +4,13 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { BadRequestException, UnauthorizedException} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { AuthService } from './auth.service';
-import { TokenBlacklistService } from './token-blacklist.service';
-import { User } from '../users/entities/user.entity';
-import { UsersService } from '../users/users.service';
-import { MailService } from '../mail/mail.service';
+import { AuthService } from '../auth.service';
+import { TokenBlacklistService } from '../token-blacklist.service';
+import { User } from '../../users/entities/user.entity';
+import { UsersService } from '../../users/users.service';
+import { MailService } from '../../mail/mail.service';
 
-// 1. Mocks globales
+// Global Mocks
 vi.mock('bcrypt', async () => {
   const actual = await vi.importActual<typeof bcrypt>('bcrypt');
   return {
@@ -129,76 +129,72 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException when user not found', async () => {
-  mockUsersService.findByEmail.mockResolvedValue(null);
+      mockUsersService.findByEmail.mockResolvedValue(null);
 
-  await expect(authService.signIn({
-    email: 'nonexistent@test.com',
-    password: 'any-password'
-  })).rejects.toThrow(UnauthorizedException);
+      await expect(authService.signIn({
+        email: 'nonexistent@test.com',
+        password: 'any-password'
+      })).rejects.toThrow(UnauthorizedException);
 
-  expect(mockUsersService.findByEmail).toHaveBeenCalledWith('nonexistent@test.com');
-});
+      expect(mockUsersService.findByEmail).toHaveBeenCalledWith('nonexistent@test.com');
+    });
 
+    it('should throw UnauthorizedException when password is invalid', async () => {
+      const mockUser = {
+        id: '1',
+        email: 'test@test.com',
+        password: 'hashed-pass',
+        isEmailVerified: true
+      } as User;
 
-it('should throw UnauthorizedException when password is invalid', async () => {
-  const mockUser = {
-    id: '1',
-    email: 'test@test.com',
-    password: 'hashed-pass',
-    isEmailVerified: true
-  } as User;
+      mockUsersService.findByEmail.mockResolvedValue(mockUser);
+      vi.mocked(bcrypt.compare).mockResolvedValue(false as any); // Incorrect password
 
-  mockUsersService.findByEmail.mockResolvedValue(mockUser);
-  vi.mocked(bcrypt.compare).mockResolvedValue(false as any); // Incorrect password
+      await expect(authService.signIn({
+        email: 'test@test.com',
+        password: 'wrong-password'
+      })).rejects.toThrow(UnauthorizedException);
 
-  await expect(authService.signIn({
-    email: 'test@test.com',
-    password: 'wrong-password'
-  })).rejects.toThrow(UnauthorizedException);
+      expect(bcrypt.compare).toHaveBeenCalledWith('wrong-password', 'hashed-pass');
+    });
 
-  expect(bcrypt.compare).toHaveBeenCalledWith('wrong-password', 'hashed-pass');
-});
+    it('should throw UnauthorizedException when email is not verified', async () => {
+      const mockUser = {
+        id: '1',
+        email: 'test@test.com',
+        password: 'hashed-pass',
+        isEmailVerified: false // Email not verified
+      } as User;
 
-it('should throw UnauthorizedException when email is not verified', async () => {
-  const mockUser = {
-    id: '1',
-    email: 'test@test.com',
-    password: 'hashed-pass',
-    isEmailVerified: false // Email not verified
-  } as User;
+      mockUsersService.findByEmail.mockResolvedValue(mockUser);
+      vi.mocked(bcrypt.compare).mockResolvedValue(true as any);
 
-  mockUsersService.findByEmail.mockResolvedValue(mockUser);
-  vi.mocked(bcrypt.compare).mockResolvedValue(true as any);
+      await expect(authService.signIn({
+        email: 'test@test.com',
+        password: 'valid-password'
+      })).rejects.toThrow(UnauthorizedException);
+    });
 
-  await expect(authService.signIn({
-    email: 'test@test.com',
-    password: 'valid-password'
-  })).rejects.toThrow(UnauthorizedException);
-});
+    it('should handle empty or whitespace passwords', async () => {
+      const mockUser = {
+        id: '1',
+        email: 'test@test.com',
+        password: 'hashed-pass',
+        isEmailVerified: true
+      } as User;
 
+      mockUsersService.findByEmail.mockResolvedValue(mockUser);
+      vi.mocked(bcrypt.compare).mockResolvedValue(true as any);
 
-it('should handle empty or whitespace passwords', async () => {
-  const mockUser = {
-    id: '1',
-    email: 'test@test.com',
-    password: 'hashed-pass',
-    isEmailVerified: true
-  } as User;
+      // Test with spaces
+      const result = await authService.signIn({
+        email: 'test@test.com',
+        password: '  valid-password  ' // With spaces
+      });
 
-  mockUsersService.findByEmail.mockResolvedValue(mockUser);
-  vi.mocked(bcrypt.compare).mockResolvedValue(true as any);
-
-  // Test with spaces
-  const result = await authService.signIn({
-    email: 'test@test.com',
-    password: '  valid-password  ' // With spaces
-  });
-
-  expect(result.accessToken).toBe('mock-token');
-  expect(bcrypt.compare).toHaveBeenCalledWith('valid-password', 'hashed-pass'); // Trim applied
-});
-
-
+      expect(result.accessToken).toBe('mock-token');
+      expect(bcrypt.compare).toHaveBeenCalledWith('valid-password', 'hashed-pass'); // Trim applied
+    });
   });
 
   describe('signUp', () => {
@@ -278,9 +274,7 @@ it('should handle empty or whitespace passwords', async () => {
 
     it('should throw error for invalid token', async () => {
       await expect(authService.logout('', '1')).rejects.toThrow(UnauthorizedException);
-    });
-
-    
+    });    
   });
 
   describe('forgotPassword', () => {

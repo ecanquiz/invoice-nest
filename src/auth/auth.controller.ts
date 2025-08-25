@@ -56,7 +56,9 @@ export class AuthController {
       const result = await this.authService.logout(authHeader, req.user.id);
       return result;
     } catch (error) {
-      console.error('Logout error:', error);
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Logout error:', error);
+      }
       throw error;
     }
   }
