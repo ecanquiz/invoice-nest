@@ -20,15 +20,15 @@ describe('Config Integration', () => {
 
   it('should have jwt config loaded', () => {    
     const secret = configService.get('jwt.secret');
-    const expiresIn = configService.get('jwt.expiresIn');
-    
-    expect(secret).toBe(process.env.JWT_SECRET );
-    expect(expiresIn).toBe('3600s');
+    const expiresIn = configService.get('jwt.expiresIn');    
 
+    expect(secret).toBe(process.env.JWT_SECRET );
     expect(secret).toBeDefined();
     expect(secret).toBeTruthy();
     expect(typeof secret).toBe('string');
-    
-    expect(expiresIn).toBe('3600s');
+    expect(expiresIn).toBe(process.env.JWT_EXPIRES_IN);
+    expect(expiresIn).toBeDefined();
+    expect(expiresIn).toBeTruthy();
+    expect(typeof expiresIn).toBe('string');
   });
 });
