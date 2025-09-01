@@ -8,18 +8,14 @@ export class MailService {
   async sendVerificationEmail(email: string, token: string): Promise<void> {
     // Implementación real con Nodemailer, SendGrid, etc.
     console.log(`Verification email sent to ${email} with token ${token}`);
-    const verificationUrl = `${this.configService.get(
-      'APP_URL',
-    )}/auth/verify-email?token=${token}`;
+    const verificationUrl = `${this.configService.get('APP_URL')}:${this.configService.get('PORT')}/auth/verify-email?token=${token}`;
     console.log(`Verification URL: ${verificationUrl}`);
   }
 
   async sendPasswordResetEmail(email: string, token: string): Promise<void> {
     // Implementación real con Nodemailer, SendGrid, etc.
     console.log(`Password reset email sent to ${email} with token ${token}`);
-    const resetUrl = `${this.configService.get(
-      'APP_URL',
-    )}/reset-password?token=${token}`;
+    const resetUrl = `${this.configService.get('APP_URL')}:${this.configService.get('PORT')}/reset-password?token=${token}`;
     console.log(`Reset URL: ${resetUrl}`);
   }
 }
