@@ -4,13 +4,15 @@ import { describe, beforeEach, expect, it, vi } from 'vitest';
 import { NotFoundException } from '@nestjs/common';
 import { User } from '../entities/user.entity';
 import { UsersService } from '../users.service';
+import { UserFilterDto } from '../dto/user-filter.dto'
 
 describe('UsersService', () => {
   let service: UsersService;
   
   const mockRepository = {
     findOne: vi.fn(),
-    save: vi.fn()
+    save: vi.fn(),
+    createQueryBuilder: vi.fn()
   };
 
   // Mock user data
@@ -173,4 +175,150 @@ describe('UsersService', () => {
         .rejects.toThrow('Save failed');
     });
   });
+
+  describe('findAll', () => {
+    /*
+      To test directly with the database from Postman, run this:
+
+      curl -X POST http://localhost:3000/auth/signup \
+        -H "Content-Type: application/json" \
+        -d '{
+          "email": "test1@example.com",
+          "password": "Password123!",
+          "name": "Usuario Uno"
+        }'
+
+      curl -X POST http://localhost:3000/auth/signup \
+        -H "Content-Type: application/json" \
+        -d '{
+          "email": "test2@example.com", 
+          "password": "Password123!",
+          "name": "Usuario Dos"
+        }'
+    */
+
+    // Mock base del QueryBuilder que todos los tests usarán
+    const createMockQueryBuilder = (mockData: [User[], number] = [[], 0]) => {
+      const mockQueryBuilder = {
+        andWhere: vi.fn().mockReturnThis(),
+        orderBy: vi.fn().mockReturnThis(),
+        skip: vi.fn().mockReturnThis(),
+        take: vi.fn().mockReturnThis(),
+        getManyAndCount: vi.fn().mockResolvedValue(mockData),
+      };
+      
+      mockRepository.createQueryBuilder = vi.fn().mockReturnValue(mockQueryBuilder);
+      return mockQueryBuilder;
+    };
+
+    it('should return users with pagination', async () => {
+      const mockUsers = [mockUser, { ...mockUser, id: '2', email: 'test2@example.com' }];
+      const total = 2;
+      
+      const mockQueryBuilder = createMockQueryBuilder([mockUsers as User[], total]);
+
+      const filters: UserFilterDto = { page: 1, limit: 10 };
+      const result = await service.findAll(filters);
+
+      expect(result).toEqual({
+        users: mockUsers,
+        total,
+        page: 1,
+        limit: 10,
+        totalPages: 1
+      });
+
+      // Verificaciones adicionales
+      expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith('user.createdAt', 'DESC');
+      expect(mockQueryBuilder.skip).toHaveBeenCalledWith(0);
+      expect(mockQueryBuilder.take).toHaveBeenCalledWith(10);
+    });
+
+    it('should filter by email', async () => {
+      const mockUsers = [mockUser];
+      const total = 1;
+      
+      const mockQueryBuilder = createMockQueryBuilder([mockUsers, total]);
+
+      const filters: UserFilterDto = { email: 'test@example.com' };
+      const result = await service.findAll(filters);
+
+      expect(result).toEqual({
+        users: mockUsers,
+        total,
+        page: 1,
+        limit: 10,
+        totalPages: 1
+      });
+
+      // Verificar que se aplicó el filtro de email
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'user.email ILIKE :email',
+        { email: '%test@example.com%' }
+      );
+    });
+
+    it('should filter by name', async () => {
+      const mockUsers = [mockUser];
+      const total = 1;
+      
+      const mockQueryBuilder = createMockQueryBuilder([mockUsers, total]);
+
+      const filters: UserFilterDto = { name: 'Test' };
+      await service.findAll(filters);
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'user.name ILIKE :name',
+        { name: '%Test%' }
+      );
+    });
+
+    it('should filter by isEmailVerified', async () => {
+      const mockUsers = [mockUser];
+      const total = 1;
+      
+      const mockQueryBuilder = createMockQueryBuilder([mockUsers, total]);
+
+      const filters: UserFilterDto = { isEmailVerified: true };
+      await service.findAll(filters);
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'user.isEmailVerified = :isEmailVerified',
+        { isEmailVerified: true }
+      );
+    });
+
+    it('should calculate totalPages correctly', async () => {
+      const mockUsers = Array(15).fill(mockUser); // 15 usuarios
+      const total = 15;
+      
+      createMockQueryBuilder([mockUsers, total]);
+
+      const filters: UserFilterDto = { page: 2, limit: 10 };
+      const result = await service.findAll(filters);
+
+      expect(result.totalPages).toBe(2); // 15 usuarios / 10 por página = 2 páginas
+      expect(result.page).toBe(2);
+      expect(result.limit).toBe(10);
+      expect(result.total).toBe(15);
+    });
+
+    it('should handle empty results', async () => {
+      createMockQueryBuilder([[], 0]); // Array vacío
+
+      const filters: UserFilterDto = { page: 1, limit: 10 };
+      const result = await service.findAll(filters);
+
+      expect(result).toEqual({
+        users: [],
+        total: 0,
+        page: 1,
+        limit: 10,
+        totalPages: 0
+      });
+    });
+  });
+  
 });
+
+
