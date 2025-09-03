@@ -1,10 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { describe, beforeEach, expect, it, vi } from 'vitest';
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, InternalServerErrorException , NotFoundException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { User } from '../entities/user.entity';
 import { UsersService } from '../users.service';
 import { UserFilterDto } from '../dto/user-filter.dto'
+import { CreateUserDto } from '../dto/create-user.dto';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -12,7 +14,8 @@ describe('UsersService', () => {
   const mockRepository = {
     findOne: vi.fn(),
     save: vi.fn(),
-    createQueryBuilder: vi.fn()
+    createQueryBuilder: vi.fn(),
+    create: vi.fn(),
   };
 
   // Mock user data
@@ -27,8 +30,13 @@ describe('UsersService', () => {
     passwordResetExpires: null,
     createdAt: new Date(),
     updatedAt: new Date(),
-    hashPassword: vi.fn()
+    // setVerifiedInDevelopment: vi.fn(),
+    // hashPassword: vi.fn()
   };
+
+  vi.mock('bcrypt', () => ({
+    hash: vi.fn().mockResolvedValue('hashed-password')
+  }));
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -61,16 +69,17 @@ describe('UsersService', () => {
     });
 
     it('should throw NotFoundException when user not found', async () => {
+      const id = 'non-existent-id';
       mockRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.findById('non-existent-id')).rejects.toThrow(NotFoundException);
-      await expect(service.findById('non-existent-id')).rejects.toThrow('User not found');
+      await expect(service.findById(id)).rejects.toThrow(NotFoundException);
+      await expect(service.findById(id)).rejects.toThrow(`User with ID ${id} not found`);
     });
 
     it('should handle repository errors', async () => {
-      mockRepository.findOne.mockRejectedValue(new Error('Database error'));
+      mockRepository.findOne.mockRejectedValue(new Error('Invalid user ID format'));
 
-      await expect(service.findById('1')).rejects.toThrow('Database error');
+      await expect(service.findById('1')).rejects.toThrow('Invalid user ID format');
     });
   });
 
@@ -161,10 +170,13 @@ describe('UsersService', () => {
 
     it('should propagate NotFoundException from findById', async () => {
       mockRepository.findOne.mockResolvedValue(null);
+      const id = 'non-existent-id';
 
       const caughtErrorPromise = service.updateUser('non-existent-id', { name: 'New Name' })
       await expect(caughtErrorPromise).rejects.toThrow(NotFoundException);
-      await expect(caughtErrorPromise).rejects.toThrow('User not found');        
+      //await expect(caughtErrorPromise).rejects.toThrow('User not found');
+      await expect(caughtErrorPromise).rejects.toThrow(`User with ID ${id} not found`);
+
     });
 
     it('should handle save errors', async () => {
@@ -324,7 +336,93 @@ describe('UsersService', () => {
       expect(result.page).toBe(1);
       expect(result.limit).toBe(10); 
     });
-  });  
+  });
+
+  describe('create', () => {
+    const createUserDto: CreateUserDto = {
+      email: 'newuser@example.com',
+      password: 'Password123!',
+      name: 'New User'
+    };
+
+    const mockCreatedUser = {
+      id: '1',
+      email: 'newuser@example.com',
+      name: 'New User',
+      isEmailVerified: false,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('should create a new user successfully', async () => {
+      // Mock: findByEmail retorna null (no existe usuario)
+      mockRepository.findOne.mockResolvedValue(null);
+      
+      // Mock: create retorna instancia
+      mockRepository.create.mockReturnValue(mockCreatedUser);
+      
+      // Mock: save retorna usuario creado
+      mockRepository.save.mockResolvedValue(mockCreatedUser);
+
+      const result = await service.create(createUserDto);
+
+      expect(result).toEqual(mockCreatedUser);
+      expect(mockRepository.findOne).toHaveBeenCalledWith({
+        where: { email: 'newuser@example.com' }
+      });
+      expect(bcrypt.hash).toHaveBeenCalledWith('Password123!', 12);
+      expect(mockRepository.create).toHaveBeenCalledWith(expect.objectContaining({
+        email: 'newuser@example.com',
+        password: 'hashed-password',
+        name: 'New User'
+      }));
+      expect(mockRepository.save).toHaveBeenCalledWith(mockCreatedUser);
+    });
+
+    it('should throw ConflictException if email already exists', async () => {
+      // Mock: ya existe usuario con ese email
+      mockRepository.findOne.mockResolvedValue(mockUser);
+
+      await expect(service.create(createUserDto)).rejects.toThrow(ConflictException);
+      expect(mockRepository.findOne).toHaveBeenCalledWith({
+        where: { email: 'newuser@example.com' }
+      });
+      expect(bcrypt.hash).not.toHaveBeenCalled();
+      expect(mockRepository.create).not.toHaveBeenCalled();
+      expect(mockRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('should normalize email to lowercase', async () => {
+      const mixedCaseDto: CreateUserDto = {
+        email: 'MixedCase@Example.com',
+        password: 'Password123!',
+        name: 'New User'
+      };
+
+      mockRepository.findOne.mockResolvedValue(null);
+      mockRepository.create.mockReturnValue(mockCreatedUser);
+      mockRepository.save.mockResolvedValue(mockCreatedUser);
+
+      await service.create(mixedCaseDto);
+
+      expect(mockRepository.create).toHaveBeenCalledWith(expect.objectContaining({
+        email: 'mixedcase@example.com' // ← lowercase
+      }));
+    });
+
+    it('should handle database errors during save', async () => {
+      mockRepository.findOne.mockResolvedValue(null);
+      mockRepository.create.mockReturnValue(mockCreatedUser);
+      mockRepository.save.mockRejectedValue(new Error('Database error'));
+
+      await expect(service.create(createUserDto)).rejects.toThrow(InternalServerErrorException);
+    });
+  });
+
 });
 
 

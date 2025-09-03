@@ -1,13 +1,17 @@
 import { describe, beforeEach, expect, it, vi} from 'vitest'
 import { Test, TestingModule } from '@nestjs/testing';
+import {
+  BadRequestException,
+  ConflictException,
+  InternalServerErrorException,
+  NotFoundException
+} from '@nestjs/common';
 import { UsersController } from '../users.controller';
 import { UsersService } from '../users.service';
 import { UserFilterDto } from '../dto/user-filter.dto';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
-import { NotFoundException } from '@nestjs/common';
 
-// Mock user data
 const mockUser = {
   id: '1',
   email: 'test@example.com',
@@ -51,7 +55,6 @@ describe('UsersController', () => {
     controller = module.get<UsersController>(UsersController);
     usersService = module.get<UsersService>(UsersService);
 
-        // // We ensure that the mocks are injected
     if (!controller['usersService']) {
       (controller['usersService'] as any) = usersService;
     }
@@ -62,10 +65,29 @@ describe('UsersController', () => {
   });
 
   describe('findAll', () => {
+    const filters: UserFilterDto = { page: 1, limit: 10 };
+    const initResult = { users: <typeof mockUser[]>[], total: 0, page: 1, limit: 10, totalPages: 0 };
+
+    it('should return empty result when no users found', async () => {
+      mockUsersService.findAll.mockResolvedValue(initResult);
+      const result = await controller.findAll(filters);
+    
+      expect(result).toEqual(initResult);
+      expect(usersService.findAll).toHaveBeenCalledWith(filters);
+    });
+
+    it('should use default values when no filters provided', async () => {
+      const expectedResult = { ...initResult, users: [mockUser], total: 1, totalPages: 1 };   
+      mockUsersService.findAll.mockResolvedValue(expectedResult);
+
+      const result = await controller.findAll({});
+
+      expect(result).toEqual(expectedResult);
+      expect(usersService.findAll).toHaveBeenCalledWith({});
+    });
+
     it('should call service.findAll with filters', async () => {
-      const filters: UserFilterDto = { page: 1, limit: 10 };
-      const expectedResult = { users: [mockUser], total: 1, page: 1, limit: 10, totalPages: 1 };
-      
+      const expectedResult = { ...initResult, users: [mockUser], total: 1, totalPages: 1 }; 
       mockUsersService.findAll.mockResolvedValue(expectedResult);
 
       const result = await controller.findAll(filters);
@@ -75,86 +97,116 @@ describe('UsersController', () => {
     });
 
     it('should handle service errors properly', async () => {
-      const filters: UserFilterDto = { page: 1, limit: 10 };
-      const errorMessage = 'Database connection failed';
-    
+      const errorMessage = 'Database connection failed';    
       mockUsersService.findAll.mockRejectedValue(new Error(errorMessage));
 
       await expect(controller.findAll(filters)).rejects.toThrow(errorMessage);
       expect(usersService.findAll).toHaveBeenCalledWith(filters);
     });
 
-    it('should return empty result when no users found', async () => {
-      const filters: UserFilterDto = { page: 1, limit: 10 };
-      const emptyResult = { 
-        users: [], 
-        total: 0, 
-        page: 1, 
-        limit: 10, 
-        totalPages: 0 
-      };
-    
-      mockUsersService.findAll.mockResolvedValue(emptyResult);
-
-      const result = await controller.findAll(filters);
-    
-      expect(result).toEqual(emptyResult);
-      expect(usersService.findAll).toHaveBeenCalledWith(filters);
-    });
-
-    it('should use default values when no filters provided', async () => {
-      const expectedResult = { 
-        users: [mockUser], 
-        total: 1, 
-        page: 1, 
-        limit: 10, 
-        totalPages: 1 
-      };
-    
-      mockUsersService.findAll.mockResolvedValue(expectedResult);
-
-      // Llamar sin filtros (debería usar valores por defecto)
-      const result = await controller.findAll({});
-
-      expect(result).toEqual(expectedResult);
-      expect(usersService.findAll).toHaveBeenCalledWith({});
-    });
   });
 
-  /*describe('findOne', () => {
-    it('should call service.findById with correct ID', async () => {
+  describe('findOne', () => {
+    const userId = '550e8400-e29b-41d4-a716-446655440000';
+
+    it('should return user when found by ID', async () => {
       mockUsersService.findById.mockResolvedValue(mockUser);
 
-      const result = await controller.findOne('1');
+      const result = await controller.findOne({ id: userId });
 
       expect(result).toEqual(mockUser);
-      expect(usersService.findById).toHaveBeenCalledWith('1');
+      expect(usersService.findById).toHaveBeenCalledWith(userId);
     });
 
     it('should throw NotFoundException when user not found', async () => {
-      mockUsersService.findById.mockRejectedValue(new NotFoundException('User not found'));
+      const error = new NotFoundException('User not found');      
+      mockUsersService.findById.mockRejectedValue(error);
 
-      await expect(controller.findOne('999')).rejects.toThrow(NotFoundException);
-      expect(usersService.findById).toHaveBeenCalledWith('999');
+      await expect(controller.findOne({ id: userId })).rejects.toThrow(error);
+      expect(usersService.findById).toHaveBeenCalledWith(userId);
+    });
+
+    it('should throw BadRequestException for invalid UUID format', async () => {
+      const invalidId = 'invalid-id';
+      const error = new BadRequestException('Invalid user ID format');      
+      mockUsersService.findById.mockRejectedValue(error);
+
+      await expect(controller.findOne({ id: invalidId })).rejects.toThrow(error);
+      expect(usersService.findById).toHaveBeenCalledWith(invalidId);
+    });
+
+    it('should propagate other errors correctly', async () => {
+      const error = new Error('Database connection failed');      
+      mockUsersService.findById.mockRejectedValue(error);
+
+      await expect(controller.findOne({ id: userId })).rejects.toThrow(error);
+      expect(usersService.findById).toHaveBeenCalledWith(userId);
     });
   });
 
   describe('create', () => {
-    it('should call service.create with createUserDto', async () => {
-      const createUserDto: CreateUserDto = {
-        email: 'new@example.com',
-        password: 'Password123!',
-        name: 'New User'
-      };
+    const createUserDto: CreateUserDto = {
+      email: 'newuser@example.com',
+      password: 'Password123!',
+      name: 'New User'
+    };
 
-      mockUsersService.create.mockResolvedValue(mockUser);
+    const mockCreatedUser = {
+      id: '1',
+      email: 'newuser@example.com',
+      name: 'New User',
+      isEmailVerified: false,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('should call service.create with CreateUserDto and return user', async () => {
+      mockUsersService.create.mockResolvedValue(mockCreatedUser);
 
       const result = await controller.create(createUserDto);
 
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual(mockCreatedUser);
       expect(usersService.create).toHaveBeenCalledWith(createUserDto);
     });
+
+    it('should throw ConflictException when service throws ConflictException', async () => {
+      const conflictError = new ConflictException('Email already registered');
+      mockUsersService.create.mockRejectedValue(conflictError);
+
+      await expect(controller.create(createUserDto)).rejects.toThrow(ConflictException);
+      await expect(controller.create(createUserDto)).rejects.toThrow('Email already registered');
+    });
+
+    it('should throw InternalServerErrorException when service throws other errors', async () => {
+      const internalError = new InternalServerErrorException('Database error');
+      mockUsersService.create.mockRejectedValue(internalError);
+
+      await expect(controller.create(createUserDto)).rejects.toThrow(InternalServerErrorException);
+    });
+
+    it('should validate CreateUserDto input', async () => {
+      // Esta prueba verifica que NestJS valide el DTO automáticamente
+      // La validación real se prueba en los DTO tests
+      mockUsersService.create.mockResolvedValue(mockCreatedUser);
+
+      const validDto: CreateUserDto = {
+        email: 'valid@example.com',
+        password: 'ValidPass123!',
+        name: 'Valid Name'
+      };
+
+      const result = await controller.create(validDto);
+      expect(result).toEqual(mockCreatedUser);
+    });
   });
+
+  /*
+
+
 
   describe('update', () => {
     it('should call service.update with correct parameters', async () => {

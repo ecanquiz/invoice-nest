@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { UserIdDto } from './users/dto/user-id.dto';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,7 +21,9 @@ async function bootstrap() {
     })
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, config, {
+    extraModels: [UserIdDto], // ← Force include DTO
+  });
   SwaggerModule.setup('api', app, document, {
     swaggerOptions: {
       persistAuthorization: true, // Keeps the token between refills
