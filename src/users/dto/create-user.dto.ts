@@ -3,15 +3,20 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDto {
   @ApiProperty({
-    example: 'usuario@ejemplo.com',
-    description: 'Email del usuario',
+    description: 'User email address - must be unique across the system',
+    example: 'user@example.com',
+    format: 'email',
+    maxLength: 255
   })
   @IsEmail()
   email: string;
 
   @ApiProperty({
-    example: 'Password123!',
-    description: 'Contraseña (mín 8 caracteres, 1 mayúscula, 1 número, 1 especial)',
+    description: 'User password - must contain at least 1 uppercase letter, 1 number, and 1 special character',
+    example: 'SecurePassword123!',
+    minLength: 8,
+    maxLength: 20,
+    pattern: '/((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$/'
   })
   @IsString()
   @MinLength(8)
@@ -22,8 +27,12 @@ export class CreateUserDto {
   password: string;
 
   @ApiProperty({
-    example: 'Juan Pérez',
-    description: 'Nombre completo del usuario',
+    description: 'Full name of the user',
+    example: 'John Doe',
+    minLength: 2,
+    maxLength: 50,
+    required: false,
+    nullable: true
   })
   @IsString()
   @MinLength(2)

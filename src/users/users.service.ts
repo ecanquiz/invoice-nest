@@ -1,6 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, ILike } from 'typeorm';
+import { Like, ILike, Repository, IsNull } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { UserFilterDto } from './dto/user-filter.dto';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -25,6 +32,8 @@ export class UsersService {
 
     // Crear query builder
     const queryBuilder = this.usersRepository.createQueryBuilder('user');
+
+    queryBuilder.andWhere('user.deletedAt IS NULL');
 
     // Aplicar filtros
     if (email) {
@@ -59,20 +68,117 @@ export class UsersService {
   }
 
   async findById(id: string): Promise<User> {
-    const user = await this.usersRepository.findOne({ where: { id } });
-    if (!user) {
-      throw new NotFoundException('User not found');
+    try {
+      const user = await this.usersRepository.findOne({ where: { id, deletedAt: IsNull() } });
+      
+      if (!user) {
+        throw new NotFoundException(`User with ID ${id} not found`);
+      }
+      
+      return user;
+    } catch (error) {
+
+      if (error instanceof NotFoundException) {
+        throw error; // ← Propagar NotFoundException tal cual 
+      }
+      
+      // Para otros errores (UUID inválido, etc.)
+      throw new BadRequestException('Invalid user ID format');
     }
-    return user;
+  }
+
+async create(createUserDto: CreateUserDto): Promise<User> {
+    const { email, password, name } = createUserDto;
+
+    try {
+      // 1. Verificar si el email ya existe
+      const existingUser = await this.findByEmail(email);
+      if (existingUser) {
+        throw new ConflictException('Email already registered');
+      }
+
+      // 2. Hashear password
+      const hashedPassword = await bcrypt.hash(password, 12); // ↑ cost factor a 12
+
+      // 3. Crear instancia de usuario
+      const user = this.usersRepository.create({
+        email: email.toLowerCase().trim(), // ← Normalizar email
+        password: hashedPassword,
+        name: name?.trim(), // ← Trim si existe
+        isEmailVerified: false,
+        emailVerificationToken: null,
+        passwordResetToken: null,
+        passwordResetExpires: null
+      });
+
+      // 4. Guardar usuario en la base de datos
+      const savedUser = await this.usersRepository.save(user);
+
+      // 5. Retornar usuario (excluyendo password por seguridad)
+      const { password: _, ...userWithoutPassword } = savedUser;
+      return userWithoutPassword as User;
+
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error; // ← Propagar ConflictException tal cual
+      }
+
+      // Manejar otros errores (base de datos, etc.)
+      throw new InternalServerErrorException('Could not create user');
+    }
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.usersRepository.findOne({ where: { email } });
+    return this.usersRepository.findOne({ where: {
+      email, 
+      deletedAt: IsNull()
+    } });
   }
 
-  async updateUser(id: string, updateData: Partial<User>): Promise<User> {
+  async update(id: string, updateData: Partial<User>): Promise<User> {
     const user = await this.findById(id);
     Object.assign(user, updateData);
     return this.usersRepository.save(user);
+  }
+  
+  async remove(id: string): Promise<{ message: string }> {
+    try {
+      const user = await this.usersRepository.findOne({
+        where: { id, deletedAt: IsNull() } // Solo buscar usuarios no eliminados
+      });
+      
+      if (!user) {
+        throw new NotFoundException(`User with ID ${id} not found`);
+      }
+
+      // Soft delete: actualizar deletedAt en lugar de eliminar físicamente
+      await this.usersRepository.softDelete(id);
+      
+      return { message: 'User deleted successfully' };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      
+      throw new InternalServerErrorException('Could not delete user');
+    }
+  }
+
+  async restore(id: string): Promise<User> {
+    try {
+      const result = await this.usersRepository.restore(id);
+      
+      if (result.affected === 0) {
+        throw new NotFoundException(`User with ID ${id} not found or already restored`);
+      }
+      
+      return this.findById(id);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      
+      throw new InternalServerErrorException('Could not restore user');
+    }
   }
 }

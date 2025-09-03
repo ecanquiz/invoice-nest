@@ -105,7 +105,7 @@ describe('AuthService', () => {
         passwordResetExpires: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-        hashPassword: vi.fn()
+        //hashPassword: vi.fn()
       };
 
       // Configure all mocks

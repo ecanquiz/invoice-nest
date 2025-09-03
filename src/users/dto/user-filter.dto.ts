@@ -3,7 +3,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UserFilterDto {
   @ApiPropertyOptional({
-    description: 'Número de página para paginación',
+    description: 'Page number for pagination',
     example: 1,
     minimum: 1
   })
@@ -13,7 +13,7 @@ export class UserFilterDto {
   page?: number = 1;
 
   @ApiPropertyOptional({
-    description: 'Límite de resultados por página',
+    description: 'Limit of results per page',
     example: 10,
     minimum: 1,
     maximum: 100
@@ -25,7 +25,7 @@ export class UserFilterDto {
   limit?: number = 10;
 
   @ApiPropertyOptional({
-    description: 'Filtrar por email (búsqueda parcial)',
+    description: 'Filter by email (partial search)',
     example: 'user@example.com'
   })
   @IsOptional()
@@ -33,15 +33,15 @@ export class UserFilterDto {
   email?: string;
 
   @ApiPropertyOptional({
-    description: 'Filtrar por nombre (búsqueda parcial)',
-    example: 'Juan'
+    description: 'Filter by name (partial search)',
+    example: 'John'
   })
   @IsOptional()
   @IsString()
   name?: string;
 
   @ApiPropertyOptional({
-    description: 'Filtrar por estado de verificación de email',
+    description: 'Filter by email verification status',
     example: true
   })
   @IsOptional()
