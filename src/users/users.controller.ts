@@ -1,9 +1,11 @@
-import { Controller, Get, Query, Param, Post, Body } from '@nestjs/common';
+import { Controller, Get, Query, Param, Post, Body, ParseUUIDPipe, Patch, Delete, HttpCode } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserFilterDto } from './dto/user-filter.dto';
 import { UserIdDto } from './dto/user-id.dto';
 import { CreateUserDto } from './dto/create-user.dto';
-import { ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
+import { UpdateUserDto } from './dto/update-user.dto';
+
+import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiBody } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
 
 @ApiTags('Users')
@@ -129,14 +131,78 @@ export class UsersController {
   async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
-  /*
 
-
-
+  @ApiOperation({
+  summary: 'Update user partially',
+  description: 'Updates specific fields of a user. Only provided fields will be updated.'
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Valid UUID of the user to update',
+    example: '550e8400-e29b-41d4-a716-446655440000'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User updated successfully',
+    type: User
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid UUID format or validation error'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found'
+  })
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {}
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateUserDto: UpdateUserDto
+  ) {
+    return this.usersService.update(id, updateUserDto);
+  }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {}
-  */
+  @HttpCode(200)
+  @ApiOperation({ 
+    summary: 'Delete a user', 
+    description: 'Performs a soft delete of the user. The user record remains in the database but is marked as deleted.' 
+  })
+  @ApiParam({ 
+    name: 'id', 
+    description: 'UUID of the user to delete',
+    example: '123e4567-e89b-12d3-a456-426614174000'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'User deleted successfully',
+    schema: {
+      example: { message: 'User deleted successfully' }
+    }
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'User not found',
+    schema: {
+      example: { 
+        statusCode: 404,
+        message: 'User with ID 123e4567-e89b-12d3-a456-426614174000 not found',
+        error: 'Not Found'
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Internal server error',
+    schema: {
+      example: { 
+        statusCode: 500,
+        message: 'Could not delete user',
+        error: 'Internal Server Error'
+      }
+    }
+  })
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.usersService.remove(id);
+  }
 }

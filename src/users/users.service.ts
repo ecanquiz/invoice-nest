@@ -6,7 +6,7 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, ILike, Repository } from 'typeorm';
+import { Like, ILike, Repository, IsNull } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { UserFilterDto } from './dto/user-filter.dto';
@@ -32,6 +32,8 @@ export class UsersService {
 
     // Crear query builder
     const queryBuilder = this.usersRepository.createQueryBuilder('user');
+
+    queryBuilder.andWhere('user.deletedAt IS NULL');
 
     // Aplicar filtros
     if (email) {
@@ -67,7 +69,7 @@ export class UsersService {
 
   async findById(id: string): Promise<User> {
     try {
-      const user = await this.usersRepository.findOne({ where: { id } });
+      const user = await this.usersRepository.findOne({ where: { id, deletedAt: IsNull() } });
       
       if (!user) {
         throw new NotFoundException(`User with ID ${id} not found`);
@@ -127,16 +129,56 @@ async create(createUserDto: CreateUserDto): Promise<User> {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.usersRepository.findOne({ where: { email } });
+    return this.usersRepository.findOne({ where: {
+      email, 
+      deletedAt: IsNull()
+    } });
   }
 
-  async updateUser(id: string, updateData: Partial<User>): Promise<User> {
+  async update(id: string, updateData: Partial<User>): Promise<User> {
     const user = await this.findById(id);
     Object.assign(user, updateData);
     return this.usersRepository.save(user);
   }
   
-  async remove(id: string): Promise<void> {
-    // Lógica para eliminar usuario (soft delete)
+  async remove(id: string): Promise<{ message: string }> {
+    try {
+      const user = await this.usersRepository.findOne({
+        where: { id, deletedAt: IsNull() } // Solo buscar usuarios no eliminados
+      });
+      
+      if (!user) {
+        throw new NotFoundException(`User with ID ${id} not found`);
+      }
+
+      // Soft delete: actualizar deletedAt en lugar de eliminar físicamente
+      await this.usersRepository.softDelete(id);
+      
+      return { message: 'User deleted successfully' };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      
+      throw new InternalServerErrorException('Could not delete user');
+    }
+  }
+
+  async restore(id: string): Promise<User> {
+    try {
+      const result = await this.usersRepository.restore(id);
+      
+      if (result.affected === 0) {
+        throw new NotFoundException(`User with ID ${id} not found or already restored`);
+      }
+      
+      return this.findById(id);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      
+      throw new InternalServerErrorException('Could not restore user');
+    }
   }
 }

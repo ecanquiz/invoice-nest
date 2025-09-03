@@ -23,7 +23,13 @@ const mockUser = {
   passwordResetExpires: null,
   createdAt: new Date(),
   updatedAt: new Date(),
-  hashPassword: vi.fn()
+  deletedAt: null,
+  //hashPassword: vi.fn()
+};
+
+const mockDeletedUser = {
+  ...mockUser,
+  deletedAt: new Date() // Usuario eliminado
 };
 
 const mockUsersService = {
@@ -204,39 +210,76 @@ describe('UsersController', () => {
     });
   });
 
-  /*
-
-
-
   describe('update', () => {
-    it('should call service.update with correct parameters', async () => {
-      const updateUserDto: UpdateUserDto = { name: 'Updated Name' };
-      const updatedUser = { ...mockUser, name: 'Updated Name' };
+    const userId = '550e8400-e29b-41d4-a716-446655440000';
+    const updateUserDto: UpdateUserDto = {
+      name: 'Updated Name',
+      email: 'updated@example.com'
+    };
 
-      mockUsersService.update.mockResolvedValue(updatedUser);
+    const mockUpdatedUser = {
+      id: userId,
+      name: 'Updated Name',
+      email: 'updated@example.com',
+      isEmailVerified: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
 
-      const result = await controller.update('1', updateUserDto);
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
 
-      expect(result).toEqual(updatedUser);
-      expect(usersService.update).toHaveBeenCalledWith('1', updateUserDto);
+    it('should update user successfully', async () => {
+      mockUsersService.update.mockResolvedValue(mockUpdatedUser);
+
+      const result = await controller.update(userId, updateUserDto);
+
+      expect(result).toEqual(mockUpdatedUser);
+      expect(usersService.update).toHaveBeenCalledWith(userId, updateUserDto);
+    });
+
+    it('should throw NotFoundException when user not found', async () => {
+      const notFoundError = new NotFoundException('User not found');
+      mockUsersService.update.mockRejectedValue(notFoundError);
+
+      await expect(controller.update(userId, updateUserDto)).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('remove', () => {
-    it('should call service.remove with correct ID', async () => {
-      mockUsersService.remove.mockResolvedValue(undefined);
+    it('should delete a user successfully', async () => {
+      const userId = '1';
+      const result = { message: 'User deleted successfully' };
+      
+      mockUsersService.remove.mockResolvedValue(result);
 
-      const result = await controller.remove('1');
+      const response = await controller.remove(userId);
 
-      expect(result).toBeUndefined();
-      expect(usersService.remove).toHaveBeenCalledWith('1');
+      expect(mockUsersService.remove).toHaveBeenCalledWith(userId);
+      expect(response).toEqual(result);
     });
 
-    it('should throw NotFoundException when user to delete not found', async () => {
-      mockUsersService.remove.mockRejectedValue(new NotFoundException('User not found'));
+    it('should throw NotFoundException when user does not exist', async () => {
+      const userId = 'non-existent-id';
+      
+      mockUsersService.remove.mockRejectedValue(
+        new NotFoundException(`User with ID ${userId} not found`)
+      );
 
-      await expect(controller.remove('999')).rejects.toThrow(NotFoundException);
-      expect(usersService.remove).toHaveBeenCalledWith('999');
+      await expect(controller.remove(userId)).rejects.toThrow(NotFoundException);
+      expect(mockUsersService.remove).toHaveBeenCalledWith(userId);
     });
-  });*/
+
+    it('should throw InternalServerErrorException on server error', async () => {
+      const userId = '1';
+      
+      mockUsersService.remove.mockRejectedValue(
+        new InternalServerErrorException('Could not delete user')
+      );
+
+      await expect(controller.remove(userId)).rejects.toThrow(InternalServerErrorException);
+      expect(mockUsersService.remove).toHaveBeenCalledWith(userId);
+    });
+  });
 });

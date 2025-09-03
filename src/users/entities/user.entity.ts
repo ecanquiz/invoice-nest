@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   BeforeInsert,
   BeforeUpdate,
+  DeleteDateColumn
 } from 'typeorm';
 // import * as bcrypt from 'bcrypt';
 import { ApiProperty } from '@nestjs/swagger';
@@ -107,6 +108,9 @@ export class User {
   })
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
+
+  @DeleteDateColumn({ nullable: true })
+  deletedAt: Date | null;
 
   /*@BeforeInsert()
   async setVerifiedInDevelopment() {
