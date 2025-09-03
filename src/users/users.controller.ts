@@ -18,7 +18,16 @@ export class UsersController {
     return this.usersService.findAll(filters);
   }
 
+  /*@Get(':id')  
+  findOne(@Param('id') id: string) {}
 
+  @Post()
+  create(@Body() createUserDto: CreateUserDto) {}
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {}
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {}
+  */
 }
-
-

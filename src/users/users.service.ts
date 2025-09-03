@@ -75,4 +75,15 @@ export class UsersService {
     Object.assign(user, updateData);
     return this.usersRepository.save(user);
   }
+
+  /*// users.service.ts - Añadir estos métodos
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    // Lógica para crear usuario
+  }
+
+  async remove(id: string): Promise<void> {
+    // Lógica para eliminar usuario (soft delete)
+  }*/
+
+
 }

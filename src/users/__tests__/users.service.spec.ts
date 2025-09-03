@@ -317,8 +317,14 @@ describe('UsersService', () => {
         totalPages: 0
       });
     });
-  });
-  
+
+    it('should use default pagination values', async () => {      
+      const result = await service.findAll({});
+
+      expect(result.page).toBe(1);
+      expect(result.limit).toBe(10); 
+    });
+  });  
 });
 
 
