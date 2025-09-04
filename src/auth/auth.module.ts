@@ -8,6 +8,9 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { TokenBlacklistService } from './token-blacklist.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
+import { PermissionsGuard } from './guards/permissions.guard';
 import { User } from '../users/entities/user.entity';
 import { UsersModule } from '../users/users.module';
 import { MailModule } from '../mail/mail.module';
@@ -28,8 +31,8 @@ import { MailModule } from '../mail/mail.module';
     UsersModule,
     MailModule
   ],
-  providers: [AuthService, JwtStrategy, TokenBlacklistService],
+  providers: [AuthService, JwtStrategy, TokenBlacklistService, JwtAuthGuard, RolesGuard, PermissionsGuard],
   controllers: [AuthController],
-  exports: [JwtStrategy, PassportModule, TokenBlacklistService],
+  exports: [JwtStrategy, PassportModule, TokenBlacklistService, JwtAuthGuard, RolesGuard, PermissionsGuard],
 })
 export class AuthModule {}

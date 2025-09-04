@@ -1,4 +1,9 @@
-import { Controller, Get, Query, Param, Post, Body, ParseUUIDPipe, Patch, Delete, HttpCode } from '@nestjs/common';
+import { Controller, Get, Query, Param, Post, Body, ParseUUIDPipe, Patch, Delete, HttpCode, UseGuards } from '@nestjs/common';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Permissions } from '../auth/decorators/permissions.decorator';
+//import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { UsersService } from './users.service';
 import { UserFilterDto } from './dto/user-filter.dto';
 import { UserIdDto } from './dto/user-id.dto';
@@ -10,6 +15,8 @@ import { User } from './entities/user.entity';
 
 @ApiTags('Users')
 @Controller('users')
+@UseGuards(//JwtAuthGuard, 
+RolesGuard, PermissionsGuard) // Múltiples guards
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -19,6 +26,8 @@ export class UsersController {
     description: 'User list successfully obtained',
   })
   @Get()
+  @Roles('admin') // Solo admin
+  @Permissions('users.read') // Con permiso de lectura
   async findAll(@Query() filters: UserFilterDto) {
     return this.usersService.findAll(filters);
   }
@@ -205,4 +214,36 @@ export class UsersController {
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.remove(id);
   }
+
+
+
+
+  @Post(':id/roles')
+  @Roles('admin')
+  @Permissions('users.update')
+  async assignRoles(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: { roleIds: string[] }
+  ) {
+    return this.usersService.assignRolesToUser(id, body.roleIds);
+  }
+
+  @Delete(':id/roles')
+  @Roles('admin')
+  @Permissions('users.update')
+  async removeRoles(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: { roleIds: string[] }
+  ) {
+    return this.usersService.removeRolesFromUser(id, body.roleIds);
+  }
+
+  @Get('role/:roleName')
+  @Roles('admin')
+  @Permissions('users.read')
+  async findByRole(@Param('roleName') roleName: string) {
+    return this.usersService.findUsersByRole(roleName);
+  }
+
+  
 }
