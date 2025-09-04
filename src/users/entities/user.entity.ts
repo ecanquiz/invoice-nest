@@ -6,10 +6,13 @@ import {
   UpdateDateColumn,
   BeforeInsert,
   BeforeUpdate,
-  DeleteDateColumn
+  DeleteDateColumn,
+  ManyToMany,
+  JoinTable
 } from 'typeorm';
 // import * as bcrypt from 'bcrypt';
 import { ApiProperty } from '@nestjs/swagger';
+import { Role } from '../../roles/entities/role.entity';
 
 @Entity('users')
 export class User {
@@ -111,6 +114,14 @@ export class User {
 
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date | null;
+
+  @ManyToMany(() => Role, { eager: true })
+  @JoinTable({
+    name: 'user_roles',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'role_id', referencedColumnName: 'id' }
+  })
+  roles: Role[];
 
   /*@BeforeInsert()
   async setVerifiedInDevelopment() {

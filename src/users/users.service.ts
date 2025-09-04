@@ -6,9 +6,10 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, ILike, Repository, IsNull } from 'typeorm';
+import { Like, ILike, Repository, IsNull, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
+import { Role } from '../roles/entities/role.entity';
 import { UserFilterDto } from './dto/user-filter.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -18,6 +19,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(Role)
+    private roleRepository: Repository<Role>,
   ) {}
 
   async findAll(filters: UserFilterDto): Promise<{ 
@@ -180,5 +183,52 @@ async create(createUserDto: CreateUserDto): Promise<User> {
       
       throw new InternalServerErrorException('Could not restore user');
     }
+  }
+
+  async assignRolesToUser(userId: string, roleIds: string[]): Promise<User> {
+    try {
+      const user = await this.findById(userId);
+      const roles = await this.roleRepository.find({
+        where: { 
+          id: In(roleIds), 
+          isActive: true 
+        }
+      });
+
+      if (roles.length === 0) {
+        throw new NotFoundException('No valid roles found');
+      }
+
+      user.roles = roles;
+      return await this.usersRepository.save(user);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Could not assign roles to user');
+    }
+  }
+
+  async removeRolesFromUser(userId: string, roleIds: string[]): Promise<User> {
+    try {
+      const user = await this.findById(userId);
+      
+      user.roles = user.roles.filter(role => !roleIds.includes(role.id));
+      return await this.usersRepository.save(user);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Could not remove roles from user');
+    }
+  }
+
+  async findUsersByRole(roleName: string): Promise<User[]> {
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .innerJoin('user.roles', 'role')
+      .where('role.name = :roleName', { roleName })
+      .andWhere('user.deletedAt IS NULL')
+      .getMany();
   }
 }

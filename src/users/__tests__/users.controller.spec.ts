@@ -38,7 +38,10 @@ const mockUsersService = {
   findByEmail: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),
-  remove: vi.fn()
+  remove: vi.fn(),
+  assignRolesToUser: vi.fn(),
+  removeRolesFromUser: vi.fn(),
+  findUsersByRole: vi.fn(),
 };
 
 describe('UsersController', () => {

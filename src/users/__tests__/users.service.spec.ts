@@ -7,6 +7,8 @@ import { User } from '../entities/user.entity';
 import { UsersService } from '../users.service';
 import { UserFilterDto } from '../dto/user-filter.dto'
 import { CreateUserDto } from '../dto/create-user.dto';
+import { Role } from '../../roles/entities/role.entity';
+import { IsNull } from 'typeorm';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -18,6 +20,11 @@ describe('UsersService', () => {
     create: vi.fn(),
     softDelete: vi.fn(),
     restore: vi.fn()
+  };
+
+  const mockRoleRepository = {
+    find: vi.fn(),
+    findOne: vi.fn(),
   };
 
   // Mock user data
@@ -35,6 +42,7 @@ describe('UsersService', () => {
     deletedAt: null,
     // setVerifiedInDevelopment: vi.fn(),
     // hashPassword: vi.fn()
+    roles: [],
   };
 
   const mockDeletedUser = {
@@ -55,6 +63,10 @@ describe('UsersService', () => {
         {
           provide: getRepositoryToken(User),
           useValue: mockRepository
+        },
+        {
+          provide: getRepositoryToken(Role),
+          useValue: mockRoleRepository
         },
       ],
     }).compile();

@@ -21,17 +21,17 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      const result = 'Hello World!';
-      vi.spyOn(appService, 'getHello').mockReturnValue(result); 
-      expect(appController.getHello()).toBe(result);
-      vi.spyOn(appService, 'getHello').mockReturnValue(result);
-      expect(appController.getHello()).toBe(result);
+    it('should return User Authentication System!', () => {
+      const result = 'User Authentication System!';
+      vi.spyOn(appService, 'getGreeting').mockReturnValue(result); 
+      expect(appController.getGreeting()).toBe(result);
+      vi.spyOn(appService, 'getGreeting').mockReturnValue(result);
+      expect(appController.getGreeting()).toBe(result);
     });
   });
 });
 
-describe('UsersService', () => {
+describe('AppController', () => {
   let appController: AppController;
 
   beforeEach(async () => {
@@ -39,23 +39,16 @@ describe('UsersService', () => {
       controllers: [AppController],
       providers: [{
         provide: AppService,
-        useValue: { getHello: () => 'Hello World!' } // Explicit Mock
+        useValue: { getGreeting: () => 'User Authentication System!' } // Explicit Mock
       }],
     }).compile();
     appController = module.get(AppService); // It doesn't use the real DI!
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      const result = 'Hello World!';
-      expect(appController.getHello()).toBe(result);
-
+    it('should return "User Authentication System!"', () => {
+      const result = 'User Authentication System!';
+      expect(appController.getGreeting()).toBe(result);
     });
   });
 })
-
-// This test suite verifies the AppController and its interaction with AppService.
-// It checks that the controller and service are defined and that the controller's getHello method returns the expected string "Hello World!".
-// The test also includes a mock for the AppService's getHello method to ensure it returns the expected value during the test.
-// The use of vi.spyOn allows for mocking methods in the service, which can be useful for isolating tests and controlling the behavior of dependencies.
-// The test is structured to run in a Node environment, suitable for unit testing with Vitest

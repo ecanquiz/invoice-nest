@@ -3,10 +3,15 @@ import { JwtStrategy } from '../jwt.strategy';
 import { ConfigService } from '@nestjs/config';
 import { UnauthorizedException } from '@nestjs/common';
 import { ExtractJwt } from 'passport-jwt';
+import { UsersService } from '../../../users/users.service';
 
 //  ConfigService Mock
 const mockConfigService = {
   get: vi.fn()
+};
+
+const mockUsersService = {
+  findById: vi.fn()
 };
 
 describe('JwtStrategy', () => {
@@ -21,7 +26,7 @@ describe('JwtStrategy', () => {
       return null;
     });
 
-    strategy = new JwtStrategy(mockConfigService as any);
+    strategy = new JwtStrategy(mockConfigService as any, mockUsersService as any);
   });
 
   it('should be defined', () => {
@@ -117,7 +122,7 @@ describe('JwtStrategy', () => {
       };
 
       // Create strategy with the mocked config service
-      const realStrategy = new JwtStrategy(realConfigService as any);
+      const realStrategy = new JwtStrategy(realConfigService as any, mockUsersService as any);
 
       const payload = { sub: 'test-id', email: 'test@test.com' };
       const result = await realStrategy.validate(payload);
