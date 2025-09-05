@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Role } from '../../roles/entities/role.entity';
 import { Permission } from '../../permissions/entities/permission.entity';
 
 @Injectable()
-export class RolesPermissionsSeed {
+  export class RolesPermissionsSeed implements OnModuleInit {
   constructor(
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
@@ -13,11 +13,15 @@ export class RolesPermissionsSeed {
     private readonly permissionRepository: Repository<Permission>,
   ) {}
 
+  async onModuleInit() {
+    await this.seed();
+  }
+
   async seed() {
-    // Crear permisos básicos
+    // Create basic permissions
     const permissions = await this.createPermissions();
     
-    // Crear roles básicos
+    // Create basic roles
     await this.createRoles(permissions);
   }
 
@@ -32,7 +36,7 @@ export class RolesPermissionsSeed {
       // Auth module
       { name: 'auth.manage', description: 'Manage auth settings', module: 'auth', action: 'manage' },
       
-      // Puedes agregar más módulos según necesites
+      // You can add more modules as needed
     ];
 
     const permissions = [] as Permission[];
@@ -64,7 +68,7 @@ export class RolesPermissionsSeed {
       const user = this.roleRepository.create({
         name: 'user',
         description: 'Regular user with basic access',
-        permissions: permissions.filter(p => p.module === 'auth'), // Solo permisos de auth
+        permissions: permissions.filter(p => p.module === 'auth'), // Auth permissions only
       });
       await this.roleRepository.save(user);
     }

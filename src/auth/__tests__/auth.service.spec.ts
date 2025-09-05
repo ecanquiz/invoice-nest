@@ -1,12 +1,14 @@
 import { Test } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { IsNull } from 'typeorm';
 import { BadRequestException, UnauthorizedException} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from '../auth.service';
 import { TokenBlacklistService } from '../token-blacklist.service';
 import { User } from '../../users/entities/user.entity';
+import { Role } from '../../roles/entities/role.entity';
 import { UsersService } from '../../users/users.service';
 import { MailService } from '../../mail/mail.service';
 
@@ -39,6 +41,16 @@ describe('AuthService', () => {
     save: vi.fn()
   };
 
+  const mockRoleRepository = {
+    findOne: vi.fn()
+  };
+
+  const mockUserRole = {
+    id: 'role-user-id',
+    name: 'user',
+    isActive: true,
+  };
+
   const mockMailService = {
     sendVerificationEmail: vi.fn(),
     sendPasswordResetEmail: vi.fn()
@@ -57,6 +69,10 @@ describe('AuthService', () => {
         {
           provide: getRepositoryToken(User),
           useValue: mockUserRepository
+        },
+        {
+          provide: getRepositoryToken(Role),
+          useValue: mockRoleRepository
         },
         {
           provide: UsersService,
@@ -105,6 +121,8 @@ describe('AuthService', () => {
         passwordResetExpires: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        deletedAt: null,
+        roles: [],
         //hashPassword: vi.fn()
       };
 
@@ -209,7 +227,7 @@ describe('AuthService', () => {
         id: '1',
         ...signUpDto,
         isEmailVerified: false,
-        emailVerificationToken: 'verification-token'
+        emailVerificationToken: 'verification-token',
       } as User;
 
       // Mock repository responses
@@ -224,12 +242,16 @@ describe('AuthService', () => {
       const result = await authService.signUp(signUpDto);
 
       expect(result).toEqual({ accessToken: 'mock-token' });
-      expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { email: 'test@test.com' } });
+      expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { email: 'test@test.com', deletedAt: IsNull() } });
       expect(mockUserRepository.create).toHaveBeenCalledWith({
         email: 'test@test.com',
-        password: 'password123',
+        emailVerificationToken: null,
+        password: 'hashed-pass',
         name: 'Test User',
-        isEmailVerified: false
+        isEmailVerified: false,
+        passwordResetExpires: null,
+        passwordResetToken: null,
+        roles: [],
       });
       expect(mockUserRepository.save).toHaveBeenCalledWith(mockUser);
     });
@@ -245,7 +267,7 @@ describe('AuthService', () => {
       mockUserRepository.findOne.mockResolvedValue(existingUser);
 
       await expect(authService.signUp(signUpDto)).rejects.toThrow(BadRequestException);
-      expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { email: 'existing@test.com' } });
+      expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { email: 'existing@test.com', deletedAt: IsNull() } });
     });
   });
 

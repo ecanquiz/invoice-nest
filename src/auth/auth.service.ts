@@ -3,12 +3,14 @@ import {
   UnauthorizedException,
   BadRequestException,
   NotFoundException,
+  InternalServerErrorException
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../users/entities/user.entity';
+import { Role } from '../roles/entities/role.entity';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
 import { SignUpDto } from './dto/sign-up.dto';
@@ -21,7 +23,9 @@ import { TokenBlacklistService } from './token-blacklist.service';
 export class AuthService {
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,    
+    private usersRepository: Repository<User>,
+    @InjectRepository(Role)
+    private roleRepository: Repository<Role>,
     private usersService: UsersService,
     private jwtService: JwtService,
     private mailService: MailService,
@@ -32,23 +36,58 @@ export class AuthService {
   async signUp(signUpDto: SignUpDto): Promise<{ accessToken: string }> {
     const { email, password, name } = signUpDto;
 
-    const existingUser = await this.usersRepository.findOne({ where: { email } });
-    if (existingUser) {
-      throw new BadRequestException('Email already in use');
+    try {
+        const existingUser = await this.usersRepository.findOne({ where: { email, deletedAt: IsNull() } });
+        if (existingUser) {
+          throw new BadRequestException('Email already in use');
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 12);
+
+        const user = this.usersRepository.create({
+            email: email.toLowerCase().trim(),
+            password: hashedPassword,
+            name: name?.trim(),
+            isEmailVerified: false,
+            emailVerificationToken: null,
+            passwordResetToken: null,
+            passwordResetExpires: null,
+            roles: [] // Initialize empty array
+        });
+
+        const savedUser = await this.usersRepository.save(user);
+        await this.assignDefaultRole(savedUser);
+      
+        await this.sendVerificationEmail(savedUser);
+
+        return this.generateToken(savedUser);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Could not create user');
     }
+  }
 
-    const user = this.usersRepository.create({
-      email,
-      password,
-      name,
-      isEmailVerified: false,
-    });
+  private async assignDefaultRole(user: User): Promise<void> {
+    try {
+      // Search for the "user" role
+      const userRole = await this.roleRepository.findOne({ 
+        where: { name: 'user', isActive: true } 
+      });
 
-    await this.usersRepository.save(user);
-  
-    await this.sendVerificationEmail(user); // Send verification email
-
-    return this.generateToken(user);
+      if (userRole) {
+        // Assign the role to the user
+        user.roles = [userRole];
+        await this.usersRepository.save(user);
+      } else {
+        // Log warning but not failing registration
+        console.warn('Default role "user" not found. User created without role.');
+      }
+    } catch (error) {
+      // Log error but not fail registration
+      console.error('Error assigning default role:', error);
+    }
   }
 
   async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {
