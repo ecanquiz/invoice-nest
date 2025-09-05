@@ -9,6 +9,7 @@ import {
   Headers
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Public } from './decorators/public.decorator';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
@@ -33,6 +34,7 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'User successfully registered' })
   @ApiResponse({ status: 400, description: 'Email already in use or invalid data' })
   @Post('signup')
+  @Public()
   async signUp(@Body() signUpDto: SignUpDto) {
     return this.authService.signUp(signUpDto);
   }
@@ -41,6 +43,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Login successful, returns JWT token' })
   @ApiResponse({ status: 401, description: 'Invalid credentials or unverified email' })
   @Post('signin')
+  @Public()
   async signIn(@Body() signInDto: SignInDto) {
     return this.authService.signIn(signInDto);
   }
@@ -94,6 +97,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Testing bcrypt functionality' })
   @ApiResponse({ status: 200, description: 'bcrypt test results' })  
   @Get('test-bcrypt')
+  @Public()
   async testBcrypt() {
     const plain = 'Password123';
     const hash = await bcrypt.hash(plain, 10);
