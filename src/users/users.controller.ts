@@ -245,5 +245,13 @@ export class UsersController {
     return this.usersService.findUsersByRole(roleName);
   }
 
-  
+  /* TODO: Enable this endpoint only for super-admins
+  @Post('create-admin')
+  @Roles('super-admin') // Only super-admins can create admins
+  async createAdmin(@Body() createUserDto: CreateUserDto) {
+    const user = await this.usersService.create(createUserDto);
+    const adminRole = await this.rolesService.findByName('admin');
+    return this.usersService.assignRolesToUser(user.id, [adminRole.id]);
+  }
+  */  
 }
