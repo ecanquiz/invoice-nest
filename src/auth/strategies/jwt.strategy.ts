@@ -22,22 +22,23 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Invalid token payload');
     }
 
-    // Mantener compatibilidad absoluta con tests existentes
-    const baseUser = { 
-      userId: payload.sub, 
-      email: payload.email 
-    };
-
-    // Agregar nuevos campos solo si existen en el payload
-    const extendedUser = {
-      ...baseUser,
-      /* TODO
-      ...(payload.id && { id: payload.id }),
-      ...(payload.roles && { roles: payload.roles }),
-      ...(payload.name && { name: payload.name }),*/
-    };
-
-    return extendedUser;
+    try {
+      // Search for user with their roles and permissions
+      const user = await this.usersService.findById(payload.sub);
+      
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        roles: user.roles,
+        isEmailVerified: user.isEmailVerified,
+      };
+    } catch (error) {
+      return { 
+        id: payload.sub, 
+        email: payload.email,
+        roles: payload.roles || [] 
+      };
+    }
   }
-  
 }
