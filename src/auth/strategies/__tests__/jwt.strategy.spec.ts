@@ -1,11 +1,11 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { JwtStrategy } from '../jwt.strategy';
-import { ConfigService } from '@nestjs/config';
 import { UnauthorizedException } from '@nestjs/common';
-import { ExtractJwt } from 'passport-jwt';
-import { UsersService } from '../../../users/users.service';
+//import { ConfigService } from '@nestjs/config';
+//import { ExtractJwt } from 'passport-jwt';
+//import { UsersService } from '../../../users/users.service';
 
-//  ConfigService Mock
+// ConfigService Mock
 const mockConfigService = {
   get: vi.fn()
 };
@@ -58,14 +58,16 @@ describe('JwtStrategy', () => {
       const payload = { 
         sub: 'user-id-123', 
         email: 'test@email.com',
-        exp: Date.now() / 1000 + 3600 // Expires in 1 hour
+        exp: Date.now() / 1000 + 3600, // Expires in 1 hour
+        roles: []
       };
       
       const result = await strategy.validate(payload);
       
       expect(result).toEqual({
-        userId: 'user-id-123',
-        email: 'test@email.com'
+        id: 'user-id-123',
+        email: 'test@email.com',
+        roles: []
       });
     });
 
@@ -105,8 +107,9 @@ describe('JwtStrategy', () => {
       
       // It should only return userId and email (as defined in validate)
       expect(result).toEqual({
-        userId: 'user-id-456',
-        email: 'user@example.com'
+        id: 'user-id-456',
+        email: 'user@example.com',
+        roles: []
       });
       expect(result).not.toHaveProperty('name');
       expect(result).not.toHaveProperty('role');
@@ -124,12 +127,13 @@ describe('JwtStrategy', () => {
       // Create strategy with the mocked config service
       const realStrategy = new JwtStrategy(realConfigService as any, mockUsersService as any);
 
-      const payload = { sub: 'test-id', email: 'test@test.com' };
+      const payload = { sub: 'test-id', email: 'test@test.com', roles: [] };
       const result = await realStrategy.validate(payload);
 
       expect(result).toEqual({
-        userId: 'test-id',
-        email: 'test@test.com'
+        id: 'test-id',
+        email: 'test@test.com',
+        roles: []
       });
     });
 

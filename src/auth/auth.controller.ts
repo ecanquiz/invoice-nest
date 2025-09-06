@@ -52,6 +52,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Recovery email sent (if email exists)' })
   @ApiResponse({ status: 400, description: 'Invalid email' })
   @Post('forgot-password')
+  @Public()
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
     return this.authService.forgotPassword(forgotPasswordDto);
   }
@@ -60,6 +61,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Password changed successfully' })
   @ApiResponse({ status: 400, description: 'Invalid or expired token' })
   @Post('reset-password')
+  @Public()
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return this.authService.resetPassword(resetPasswordDto);
   }

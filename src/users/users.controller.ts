@@ -1,7 +1,8 @@
 import { Controller, Get, Query, Param, Post, Body, ParseUUIDPipe, Patch, Delete, HttpCode, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiBody } from '@nestjs/swagger';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Permissions } from '../auth/decorators/permissions.decorator';
-//import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { UsersService } from './users.service';
@@ -9,14 +10,11 @@ import { UserFilterDto } from './dto/user-filter.dto';
 import { UserIdDto } from './dto/user-id.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-
-import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiBody } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
 
 @ApiTags('Users')
 @Controller('users')
-@UseGuards(//JwtAuthGuard, 
-RolesGuard, PermissionsGuard) // Múltiples guards
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -214,9 +212,6 @@ export class UsersController {
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.remove(id);
   }
-
-
-
 
   @Post(':id/roles')
   @Roles('admin')
