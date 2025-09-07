@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -29,7 +29,7 @@ import { MailModule } from '../mail/mail.module';
       }),
     }),
     ConfigModule.forFeature(jwtConfig),
-    UsersModule,
+    forwardRef(() => UsersModule),
     MailModule
   ],
   providers: [AuthService, JwtStrategy, TokenBlacklistService, JwtAuthGuard, RolesGuard, PermissionsGuard],

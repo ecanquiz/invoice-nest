@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { DatabaseModule } from './database/database.module';
@@ -20,8 +20,8 @@ import { MailModule } from './mail/mail.module';
     }),
     DatabaseModule,
     DatabaseSeedsModule,
-    AuthModule,
-    UsersModule,
+    forwardRef(() => AuthModule),
+    forwardRef(() => UsersModule),
     MailModule
   ],
   controllers: [AppController],
