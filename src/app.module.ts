@@ -11,6 +11,8 @@ import { PermissionsGuard } from './auth/guards/permissions.guard';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { MailModule } from './mail/mail.module';
+import { RolesModule } from './roles/roles.module';
+import { PermissionsModule } from './permissions/permissions.module';
 
 @Module({
   imports: [
@@ -22,7 +24,9 @@ import { MailModule } from './mail/mail.module';
     DatabaseSeedsModule,
     forwardRef(() => AuthModule),
     forwardRef(() => UsersModule),
-    MailModule
+    forwardRef(() => RolesModule),
+    forwardRef(() => PermissionsModule),
+    MailModule,    
   ],
   controllers: [AppController],
   providers: [

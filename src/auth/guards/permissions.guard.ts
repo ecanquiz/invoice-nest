@@ -15,12 +15,17 @@ export class PermissionsGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
+
+    // ✅ Allow full access to admins temporarily
+    if (user.roles.some(role => role.name === 'admin')) {
+      return true;
+    }
     
     if (!user || !user.roles) {
       throw new ForbiddenException('Access denied. No permissions assigned.');
     }
 
-    // Obtener todos los permisos del usuario
+    // Get all user permissions
     const userPermissions = user.roles.flatMap(role => 
       role.permissions ? role.permissions.map(p => p.name) : []
     );
