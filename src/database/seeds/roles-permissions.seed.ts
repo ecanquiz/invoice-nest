@@ -37,6 +37,10 @@ import { Permission } from '../../permissions/entities/permission.entity';
       { name: 'auth.manage', description: 'Manage auth settings', module: 'auth', action: 'manage' },
       
       // You can add more modules as needed
+      { name: 'roles.read',   description: 'Read roles', module: 'roles', action: 'read' },
+      { name: 'roles.create', description: 'Create roles', module: 'roles', action: 'create' },
+      { name: 'roles.update', description: 'Update roles', module: 'roles', action: 'update' },
+      { name: 'roles.delete', description: 'Delete roles', module: 'roles', action: 'delete' },
     ];
 
     const permissions = [] as Permission[];
@@ -53,24 +57,50 @@ import { Permission } from '../../permissions/entities/permission.entity';
   }
 
   private async createRoles(permissions: Permission[]) {
-    const adminRole = await this.roleRepository.findOne({ where: { name: 'admin' } });
+    // 1. Para el rol ADMIN - crear o actualizar
+    let adminRole = await this.roleRepository.findOne({ 
+      where: { name: 'admin' },
+      relations: ['permissions'] // ← Importante: cargar relaciones existentes
+    });
+    
     if (!adminRole) {
+      // Crear nuevo rol admin
       const admin = this.roleRepository.create({
         name: 'admin',
         description: 'Administrator with full access',
         permissions: permissions, // Todos los permisos
       });
-      await this.roleRepository.save(admin);
+      adminRole = await this.roleRepository.save(admin);
+      console.log('✅ Admin role created with all permissions');
+    } else {
+      // Actualizar rol admin existente con TODOS los permisos
+      adminRole.permissions = permissions;
+      adminRole = await this.roleRepository.save(adminRole);
+      console.log('✅ Admin role updated with all permissions');
     }
 
-    const userRole = await this.roleRepository.findOne({ where: { name: 'user' } });
+    // 2. Para el rol USER - crear o actualizar
+    let userRole = await this.roleRepository.findOne({ 
+      where: { name: 'user' },
+      relations: ['permissions']
+    });
+    
+    const authPermissions = permissions.filter(p => p.module === 'auth');
+    
     if (!userRole) {
+      // Crear nuevo rol user
       const user = this.roleRepository.create({
         name: 'user',
         description: 'Regular user with basic access',
-        permissions: permissions.filter(p => p.module === 'auth'), // Auth permissions only
+        permissions: authPermissions,
       });
       await this.roleRepository.save(user);
+      console.log('✅ User role created with auth permissions');
+    } else {
+      // Actualizar rol user existente
+      userRole.permissions = authPermissions;
+      await this.roleRepository.save(userRole);
+      console.log('✅ User role updated with auth permissions');
     }
   }
 }
