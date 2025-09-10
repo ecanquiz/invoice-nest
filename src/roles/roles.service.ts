@@ -15,6 +15,40 @@ export class RolesService {
     private readonly permissionRepository: Repository<Permission>,
   ) {}
 
+  async findAll(): Promise<Role[]> {
+    return this.roleRepository.find({
+      relations: ['permissions'],
+      where: { isActive: true },
+      order: { name: 'ASC' }
+    });
+  }
+
+  async findOne(id: string): Promise<Role> {
+    const role = await this.roleRepository.findOne({
+      where: { id, isActive: true },
+      relations: ['permissions']
+    });
+
+    if (!role) {
+      throw new NotFoundException(`Role with ID ${id} not found`);
+    }
+
+    return role;
+  }
+
+  async findByName(name: string): Promise<Role> {
+    const role = await this.roleRepository.findOne({
+      where: { name, isActive: true },
+      relations: ['permissions']
+    });
+
+    if (!role) {
+      throw new NotFoundException(`Role with name '${name}' not found`);
+    }
+
+    return role;
+  }
+  
   async create(createRoleDto: CreateRoleDto): Promise<Role> {
     try {
       // Verificar si el rol ya existe
@@ -47,39 +81,6 @@ export class RolesService {
       }
       throw new InternalServerErrorException('Could not create role');
     }
-  }
-
-  async findAll(): Promise<Role[]> {
-    return this.roleRepository.find({
-      relations: ['permissions'],
-      where: { isActive: true }
-    });
-  }
-
-  async findOne(id: string): Promise<Role> {
-    const role = await this.roleRepository.findOne({
-      where: { id, isActive: true },
-      relations: ['permissions']
-    });
-
-    if (!role) {
-      throw new NotFoundException(`Role with ID ${id} not found`);
-    }
-
-    return role;
-  }
-
-  async findByName(name: string): Promise<Role> {
-    const role = await this.roleRepository.findOne({
-      where: { name, isActive: true },
-      relations: ['permissions']
-    });
-
-    if (!role) {
-      throw new NotFoundException(`Role with name '${name}' not found`);
-    }
-
-    return role;
   }
 
   async update(id: string, updateRoleDto: UpdateRoleDto): Promise<Role> {
