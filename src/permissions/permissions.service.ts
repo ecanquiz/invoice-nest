@@ -34,7 +34,9 @@ export class PermissionsService {
   }
 
   async findAll(): Promise<Permission[]> {
-    return this.permissionRepository.find();
+    return this.permissionRepository.find({
+      order: { name: 'ASC' }
+    });
   }
 
   async findOne(id: string): Promise<Permission> {
