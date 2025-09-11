@@ -51,7 +51,7 @@ export class RolesService {
   
   async create(createRoleDto: CreateRoleDto): Promise<Role> {
     try {
-      // Verificar si el rol ya existe
+      // Check if the role already exists
       const existingRole = await this.roleRepository.findOne({
         where: { name: createRoleDto.name }
       });
@@ -60,7 +60,7 @@ export class RolesService {
         throw new ConflictException(`Role with name '${createRoleDto.name}' already exists`);
       }
 
-      // Obtener permisos si se especificaron
+      // Obtain permissions if specified
       let permissions: Permission[] = [];
       if (createRoleDto.permissionIds && createRoleDto.permissionIds.length > 0) {
         permissions = await this.permissionRepository.find({
@@ -68,7 +68,7 @@ export class RolesService {
         });
       }
 
-      // Crear el rol
+      // Create the role
       const role = this.roleRepository.create({
         ...createRoleDto,
         permissions
@@ -87,7 +87,7 @@ export class RolesService {
     try {
       const role = await this.findOne(id);
 
-      // Verificar si el nuevo nombre ya existe (si se está cambiando)
+      // Check if the new name already exists (if it is being changed)
       if (updateRoleDto.name && updateRoleDto.name !== role.name) {
         const existingRole = await this.roleRepository.findOne({
           where: { name: updateRoleDto.name }
@@ -98,7 +98,7 @@ export class RolesService {
         }
       }
 
-      // Actualizar permisos si se especificaron
+      // Update permissions if specified
       if (updateRoleDto.permissionIds) {
         const permissions = await this.permissionRepository.find({
           where: { id: In(updateRoleDto.permissionIds) }
@@ -106,7 +106,7 @@ export class RolesService {
         role.permissions = permissions;
       }
 
-      // Actualizar otros campos
+      // Update other fields
       Object.assign(role, updateRoleDto);
 
       return await this.roleRepository.save(role);
