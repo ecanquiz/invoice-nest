@@ -90,7 +90,7 @@ export class AuthService {
     }
   }
 
-  async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {
+  /*async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {
     const { email, password: rawPassword } = signInDto;
     const password = rawPassword.trim();
     const user = await this.usersService.findByEmail(email);
@@ -112,6 +112,40 @@ export class AuthService {
     }
     
     return this.generateToken(user); // Token generated successfully
+  }*/
+
+  async signIn(signInDto: SignInDto): Promise<{ user: any; token: string }> {
+    const { email, password: rawPassword } = signInDto;
+    const password = rawPassword.trim();
+    const user = await this.usersService.findByEmail(email);
+    
+    if (!user) {
+      console.log('User not found');
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+  
+    if (!isPasswordValid) {
+      console.log('Password does not match');
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (!user.isEmailVerified) {
+      console.log('Email not verified');
+      throw new UnauthorizedException('Please verify your email first');
+    }
+    
+    const { accessToken } = await this.generateToken(user);
+    
+    // Exclude the password from the user object
+    const { password: _, ...userWithoutPassword } = user;
+    //const { password, refreshToken, ...safeUser } = user;
+    
+    return {
+      user: userWithoutPassword,
+      token: accessToken
+    };
   }
 
   async logout(authorizationHeader: string, userId: string): Promise<{
