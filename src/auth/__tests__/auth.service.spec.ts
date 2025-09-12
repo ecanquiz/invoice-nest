@@ -125,7 +125,8 @@ describe('AuthService', () => {
         roles: [],
         //hashPassword: vi.fn()
       };
-
+      // Full user mockup but without password
+      const { password: _, ...userWithoutPassword } = mockUser;
       // Configure all mocks
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
       mockJwtService.sign.mockReturnValue('mock-token');
@@ -137,13 +138,10 @@ describe('AuthService', () => {
       });
 
       // Verifications
-      expect(result).toEqual({ accessToken: 'mock-token' });
+      expect(result).toEqual({ user: userWithoutPassword, token: 'mock-token' });
       expect(mockUsersService.findByEmail).toHaveBeenCalledWith('test@test.com');
       expect(bcrypt.compare).toHaveBeenCalledWith('valid-pass', 'hashed-pass');
-      expect(mockJwtService.sign).toHaveBeenCalledWith({
-        email: 'test@test.com',
-        sub: '1'
-      });
+      expect(mockJwtService.sign).toHaveBeenCalledWith({ email: 'test@test.com', sub: '1' });
     });
 
     it('should throw UnauthorizedException when user not found', async () => {
@@ -210,7 +208,7 @@ describe('AuthService', () => {
         password: '  valid-password  ' // With spaces
       });
 
-      expect(result.accessToken).toBe('mock-token');
+      expect(result.token).toBe('mock-token');
       expect(bcrypt.compare).toHaveBeenCalledWith('valid-password', 'hashed-pass'); // Trim applied
     });
   });
