@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { describe, beforeEach, expect, it, vi } from 'vitest';
 import { AuthController } from '../auth.controller';
 import { AuthService } from '../auth.service';
-import { SignUpDto } from '../dto/sign-up.dto';
-import { SignInDto } from '../dto/sign-in.dto';
+import { RegisterDto } from '../dto/register.dto';
+import { LoginDto } from '../dto/login.dto';
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -11,8 +11,8 @@ import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 
 // AuthService Mock
 const mockAuthService = {
-  signUp: vi.fn(),
-  signIn: vi.fn(),
+  register: vi.fn(),
+  login: vi.fn(),
   logout: vi.fn(),
   forgotPassword: vi.fn(),
   resetPassword: vi.fn(),
@@ -57,38 +57,38 @@ describe('AuthController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('signUp', () => {
-    it('should call authService.signUp with correct parameters', async () => {
-      const signUpDto: SignUpDto = {
+  describe('register', () => {
+    it('should call authService.register with correct parameters', async () => {
+      const registerDto: RegisterDto = {
         email: 'test@test.com',
         password: 'Password123!',
         name: 'Test User'
       };
 
       const expectedResult = { accessToken: 'mock-token' };
-      mockAuthService.signUp.mockResolvedValue(expectedResult);
+      mockAuthService.register.mockResolvedValue(expectedResult);
 
-      const result = await controller.signUp(signUpDto);
+      const result = await controller.register(registerDto);
 
       expect(result).toEqual(expectedResult);
-      expect(authService.signUp).toHaveBeenCalledWith(signUpDto);
+      expect(authService.register).toHaveBeenCalledWith(registerDto);
     });
   });
 
-  describe('signIn', () => {
-    it('should call authService.signIn with correct parameters', async () => {
-      const signInDto: SignInDto = {
+  describe('login', () => {
+    it('should call authService.login with correct parameters', async () => {
+      const loginDto: LoginDto = {
         email: 'test@test.com',
         password: 'Password123!'
       };
 
       const expectedResult = { accessToken: 'mock-token' };
-      mockAuthService.signIn.mockResolvedValue(expectedResult);
+      mockAuthService.login.mockResolvedValue(expectedResult);
 
-      const result = await controller.signIn(signInDto);
+      const result = await controller.login(loginDto);
 
       expect(result).toEqual(expectedResult);
-      expect(authService.signIn).toHaveBeenCalledWith(signInDto);
+      expect(authService.login).toHaveBeenCalledWith(loginDto);
     });
   });
 

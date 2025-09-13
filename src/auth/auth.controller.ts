@@ -11,8 +11,8 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { Public } from './decorators/public.decorator';
 import { AuthService } from './auth.service';
-import { SignUpDto } from './dto/sign-up.dto';
-import { SignInDto } from './dto/sign-in.dto';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import * as bcrypt from 'bcrypt';
@@ -33,19 +33,19 @@ export class AuthController {
   @ApiOperation({ summary: 'New user registration' })
   @ApiResponse({ status: 201, description: 'User successfully registered' })
   @ApiResponse({ status: 400, description: 'Email already in use or invalid data' })
-  @Post('signup')
+  @Post('register')
   @Public()
-  async signUp(@Body() signUpDto: SignUpDto) {
-    return this.authService.signUp(signUpDto);
+  async register(@Body() registerDto: RegisterDto) {
+    return this.authService.register(registerDto);
   }
 
   @ApiOperation({ summary: 'Login' })
   @ApiResponse({ status: 200, description: 'Login successful, returns JWT token' })
   @ApiResponse({ status: 401, description: 'Invalid credentials or unverified email' })
-  @Post('signin')
+  @Post('login')
   @Public()
-  async signIn(@Body() signInDto: SignInDto) {
-    return this.authService.signIn(signInDto);
+  async login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto);
   }
 
   @ApiOperation({ summary: 'Request password recovery' })

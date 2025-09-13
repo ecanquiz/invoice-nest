@@ -103,7 +103,7 @@ describe('AuthService', () => {
     }
   });
 
-  describe('signIn', () => {
+  describe('login', () => {
     it('should be defined', () => {
       expect(authService).toBeDefined();
     });
@@ -132,7 +132,7 @@ describe('AuthService', () => {
       mockJwtService.sign.mockReturnValue('mock-token');
 
       // Execute
-      const result = await authService.signIn({
+      const result = await authService.login({
         email: 'test@test.com',
         password: 'valid-pass'
       });
@@ -147,7 +147,7 @@ describe('AuthService', () => {
     it('should throw UnauthorizedException when user not found', async () => {
       mockUsersService.findByEmail.mockResolvedValue(null);
 
-      await expect(authService.signIn({
+      await expect(authService.login({
         email: 'nonexistent@test.com',
         password: 'any-password'
       })).rejects.toThrow(UnauthorizedException);
@@ -166,7 +166,7 @@ describe('AuthService', () => {
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
       vi.mocked(bcrypt.compare).mockResolvedValue(false as any); // Incorrect password
 
-      await expect(authService.signIn({
+      await expect(authService.login({
         email: 'test@test.com',
         password: 'wrong-password'
       })).rejects.toThrow(UnauthorizedException);
@@ -185,7 +185,7 @@ describe('AuthService', () => {
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
       vi.mocked(bcrypt.compare).mockResolvedValue(true as any);
 
-      await expect(authService.signIn({
+      await expect(authService.login({
         email: 'test@test.com',
         password: 'valid-password'
       })).rejects.toThrow(UnauthorizedException);
@@ -203,7 +203,7 @@ describe('AuthService', () => {
       vi.mocked(bcrypt.compare).mockResolvedValue(true as any);
 
       // Test with spaces
-      const result = await authService.signIn({
+      const result = await authService.login({
         email: 'test@test.com',
         password: '  valid-password  ' // With spaces
       });
@@ -213,9 +213,9 @@ describe('AuthService', () => {
     });
   });
 
-  describe('signUp', () => {
+  describe('register', () => {
     it('should create a new user and return token', async () => {
-      const signUpDto = {
+      const registerDto = {
         email: 'test@test.com',
         password: 'password123',
         name: 'Test User'
@@ -223,7 +223,7 @@ describe('AuthService', () => {
 
       const mockUser = {
         id: '1',
-        ...signUpDto,
+        ...registerDto,
         isEmailVerified: false,
         emailVerificationToken: 'verification-token',
       } as User;
@@ -237,7 +237,7 @@ describe('AuthService', () => {
       mockJwtService.sign.mockReturnValue('mock-token');
       vi.spyOn(authService as any, 'sendVerificationEmail').mockResolvedValue(undefined);
 
-      const result = await authService.signUp(signUpDto);
+      const result = await authService.register(registerDto);
 
       expect(result).toEqual({ accessToken: 'mock-token' });
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { email: 'test@test.com', deletedAt: IsNull() } });
@@ -255,7 +255,7 @@ describe('AuthService', () => {
     });
 
     it('should throw error if email already exists', async () => {
-      const signUpDto = {
+      const registerDto = {
         email: 'existing@test.com',
         password: 'password123',
         name: 'Test User'
@@ -264,7 +264,7 @@ describe('AuthService', () => {
       const existingUser = { id: '1', email: 'existing@test.com' } as User;
       mockUserRepository.findOne.mockResolvedValue(existingUser);
 
-      await expect(authService.signUp(signUpDto)).rejects.toThrow(BadRequestException);
+      await expect(authService.register(registerDto)).rejects.toThrow(BadRequestException);
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { email: 'existing@test.com', deletedAt: IsNull() } });
     });
   });

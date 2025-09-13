@@ -13,8 +13,8 @@ import { User } from '../users/entities/user.entity';
 import { Role } from '../roles/entities/role.entity';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
-import { SignUpDto } from './dto/sign-up.dto';
-import { SignInDto } from './dto/sign-in.dto';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { TokenBlacklistService } from './token-blacklist.service';
@@ -33,8 +33,8 @@ export class AuthService {
     // private readonly configService: ConfigService,
   ) {}
 
-  async signUp(signUpDto: SignUpDto): Promise<{ accessToken: string }> {
-    const { email, password, name } = signUpDto;
+  async register(registerDto: RegisterDto): Promise<{ accessToken: string }> {
+    const { email, password, name } = registerDto;
 
     try {
         const existingUser = await this.usersRepository.findOne({ where: { email, deletedAt: IsNull() } });
@@ -90,32 +90,8 @@ export class AuthService {
     }
   }
 
-  /*async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {
-    const { email, password: rawPassword } = signInDto;
-    const password = rawPassword.trim();
-    const user = await this.usersService.findByEmail(email);
-    if (!user) {
-      console.log('User not found');
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-   
-    if (!isPasswordValid) {
-      console.log('Password does not match');
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    if (!user.isEmailVerified) {
-      console.log('Email not verified');
-      throw new UnauthorizedException('Please verify your email first');
-    }
-    
-    return this.generateToken(user); // Token generated successfully
-  }*/
-
-  async signIn(signInDto: SignInDto): Promise<{ user: any; token: string }> {
-    const { email, password: rawPassword } = signInDto;
+  async login(loginDto: LoginDto): Promise<{ user: any; token: string }> {
+    const { email, password: rawPassword } = loginDto;
     const password = rawPassword.trim();
     const user = await this.usersService.findByEmail(email);
     
@@ -140,7 +116,6 @@ export class AuthService {
     
     // Exclude the password from the user object
     const { password: _, ...userWithoutPassword } = user;
-    //const { password, refreshToken, ...safeUser } = user;
     
     return {
       user: userWithoutPassword,
