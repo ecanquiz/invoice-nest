@@ -1,13 +1,13 @@
 import { validate } from 'class-validator';
-import { SignUpDto } from '../sign-up.dto';
-import { SignInDto } from '../sign-in.dto';
+import { RegisterDto } from '../register.dto';
+import { LoginDto } from '../login.dto';
 import { ForgotPasswordDto } from '../forgot-password.dto';
 import { ResetPasswordDto } from '../reset-password.dto';
 
 describe('Auth DTOs Validation', () => {
-  describe('SignUpDto', () => {
+  describe('RegisterDto', () => {
     it('should validate correct signup data', async () => {
-      const dto = new SignUpDto();
+      const dto = new RegisterDto();
       dto.email = 'test@example.com';
       dto.password = 'StrongPass123!';
       dto.name = 'John Doe';
@@ -17,7 +17,7 @@ describe('Auth DTOs Validation', () => {
     });
 
     it('should reject invalid email', async () => {
-      const dto = new SignUpDto();
+      const dto = new RegisterDto();
       dto.email = 'invalid-email';
       dto.password = 'StrongPass123!';
       dto.name = 'John Doe';
@@ -28,7 +28,7 @@ describe('Auth DTOs Validation', () => {
     });
 
     it('should reject weak password', async () => {
-      const dto = new SignUpDto();
+      const dto = new RegisterDto();
       dto.email = 'test@example.com';
       dto.password = 'weak';
       dto.name = 'John Doe';
@@ -39,7 +39,7 @@ describe('Auth DTOs Validation', () => {
     });
 
     it('should reject short name', async () => {
-      const dto = new SignUpDto();
+      const dto = new RegisterDto();
       dto.email = 'test@example.com';
       dto.password = 'StrongPass123!';
       dto.name = 'J'; // Too short
@@ -50,9 +50,9 @@ describe('Auth DTOs Validation', () => {
     });
   });
 
-  describe('SignInDto', () => {
+  describe('LoginDto', () => {
     it('should validate correct signin data', async () => {
-      const dto = new SignInDto();
+      const dto = new LoginDto();
       dto.email = 'test@example.com';
       dto.password = 'any-password';
 
@@ -61,7 +61,7 @@ describe('Auth DTOs Validation', () => {
     });
 
     it('should reject empty email', async () => {
-      const dto = new SignInDto();
+      const dto = new LoginDto();
       dto.email = '';
       dto.password = 'any-password';
 
@@ -71,7 +71,7 @@ describe('Auth DTOs Validation', () => {
     });
 
     it('should reject empty password', async () => {
-      const dto = new SignInDto();
+      const dto = new LoginDto();
       dto.email = 'test@example.com';
       dto.password = '';
 
@@ -81,7 +81,7 @@ describe('Auth DTOs Validation', () => {
     });
 
     it('should reject empty email and password', async () => {
-      const dto = new SignInDto();
+      const dto = new LoginDto();
       dto.email = '';
       dto.password = '';
 

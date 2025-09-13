@@ -32,7 +32,7 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: 'http://localhost:3000', // URL de tu frontend Nuxt
+    origin: process.env.ORIGIN, // URL de tu frontend Nuxt
     credentials: true,
   });
 
