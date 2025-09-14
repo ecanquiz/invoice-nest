@@ -81,8 +81,10 @@ export class AuthService {
         user.roles = [userRole];
         await this.usersRepository.save(user);
       } else {
-        // Log warning but not failing registration
-        console.warn('Default role "user" not found. User created without role.');
+        if (process.env.NODE_ENV !== 'test') {
+          // Log warning but not failing registration        
+          console.warn('Default role "user" not found. User created without role.');
+        }
       }
     } catch (error) {
       // Log error but not fail registration
@@ -96,19 +98,25 @@ export class AuthService {
     const user = await this.usersService.findByEmail(email);
     
     if (!user) {
-      console.log('User not found');
+      if (process.env.NODE_ENV !== 'test') {
+        console.log('User not found');
+      }
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
   
     if (!isPasswordValid) {
-      console.log('Password does not match');
+      if (process.env.NODE_ENV !== 'test') {
+        console.log('Password does not match');
+      }
       throw new UnauthorizedException('Invalid credentials');
     }
 
     if (!user.isEmailVerified) {
-      console.log('Email not verified');
+      if (process.env.NODE_ENV !== 'test') {  
+        console.log('Email not verified');
+      }
       throw new UnauthorizedException('Please verify your email first');
     }
     
@@ -123,7 +131,7 @@ export class AuthService {
     };
   }
 
-  async logout(authorizationHeader: string, userId: string): Promise<{
+  async logout(authorizationHeader: string): Promise<{
     message: string, tokenExpiresIn:string
   }> {
     const token = authorizationHeader?.replace('Bearer ', '');
@@ -131,13 +139,14 @@ export class AuthService {
       throw new UnauthorizedException('Invalid token');
     }
 
-    // Calculates the remaining time of the token until expiration
-    const decoded = this.jwtService.decode(token) as { exp: number };
+    const decoded = this.jwtService.decode(token) as { sub: string, exp: number };
+    const userId = decoded.sub;
     const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
     
-    // Add the token to the blacklist
-    this.tokenBlacklist.add(token);    
-    console.log(`User ${userId} logged out. Token invalidated.`);
+    this.tokenBlacklist.add(token);
+    if (process.env.NODE_ENV !== 'test') {  
+      console.log(`User ${userId} logged out. Token invalidated.`);
+    }
 
     return { 
       message: 'Logout successful',

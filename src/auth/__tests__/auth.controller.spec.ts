@@ -140,7 +140,7 @@ describe('AuthController', () => {
   describe('logout', () => {
     it('should call authService.logout with correct parameters', async () => {
       const authHeader = 'Bearer mock-token';
-      const userId = 'user-id-123';
+      //const userId = 'user-id-123';
       const expectedResult = { 
         message: 'Logout successful', 
         tokenExpiresIn: '3600 seconds remaining' 
@@ -148,27 +148,27 @@ describe('AuthController', () => {
 
       mockAuthService.logout.mockResolvedValue(expectedResult);
 
-      const mockRequest = {
+      /*const mockRequest = {
         user: { id: userId }
-      };
+      };*/
 
-      const result = await controller.logout(mockRequest as any, authHeader);
+      const result = await controller.logout(authHeader);
 
       expect(result).toEqual(expectedResult);
-      expect(authService.logout).toHaveBeenCalledWith(authHeader, userId);
+      expect(authService.logout).toHaveBeenCalledWith(authHeader);
     });
 
     it('should handle logout errors', async () => {
       const authHeader = 'Bearer mock-token';
-      const userId = 'user-id-123';
+      //const userId = 'user-id-123';
 
       mockAuthService.logout.mockRejectedValue(new UnauthorizedException('Invalid token'));
 
-      const mockRequest = {
-        user: { id: userId }
-      };
+      //const mockRequest = {
+      //  user: { id: userId }
+      //};
 
-      await expect(controller.logout(mockRequest as any, authHeader))
+      await expect(controller.logout(authHeader))
         .rejects.toThrow(UnauthorizedException);
     });
   });

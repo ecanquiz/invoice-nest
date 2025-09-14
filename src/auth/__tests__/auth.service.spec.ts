@@ -273,10 +273,9 @@ describe('AuthService', () => {
     it('should logout successfully and return remaining time', async () => {
       const mockToken = 'valid-token';
       const authorizationHeader = `Bearer ${mockToken}`;
-      const userId = '1';
       const futureTimestamp = Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
       
-      mockJwtService.decode.mockReturnValue({ exp: futureTimestamp });    
+      mockJwtService.decode.mockReturnValue({ sub: 'user-id', exp: futureTimestamp });    
       
       const mockTokenBlacklist = { add: vi.fn() };
 
@@ -284,7 +283,7 @@ describe('AuthService', () => {
         (authService as any)['tokenBlacklist'] = mockTokenBlacklist as unknown as typeof mockTokenBlacklist;
       }
 
-      const result = await authService.logout(authorizationHeader, userId);
+      const result = await authService.logout(authorizationHeader);
 
       expect(result.message).toBe('Logout successful');
       expect(result.tokenExpiresIn).toContain('seconds remaining');
@@ -293,7 +292,7 @@ describe('AuthService', () => {
     });
 
     it('should throw error for invalid token', async () => {
-      await expect(authService.logout('', '1')).rejects.toThrow(UnauthorizedException);
+      await expect(authService.logout('')).rejects.toThrow(UnauthorizedException);
     });    
   });
 
