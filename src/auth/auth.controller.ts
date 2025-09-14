@@ -16,7 +16,7 @@ import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import * as bcrypt from 'bcrypt';
-import type { AuthenticatedRequest } from '../common/types/express';
+// import type { AuthenticatedRequest } from '../common/types/express';
 import {
   ApiTags,
   ApiOperation,
@@ -82,11 +82,14 @@ export class AuthController {
   @Post('logout')
   @UseGuards(AuthGuard('jwt'))
   async logout(
-    @Req() req: AuthenticatedRequest,
+    // @Req() req: AuthenticatedRequest,
     @Headers('authorization') authHeader: string
   ) {  
     try {
-      const result = await this.authService.logout(authHeader, req.user.id);
+      const result = await this.authService.logout(
+        authHeader
+        //, req.user.id
+      );
       return result;
     } catch (error) {
       if (process.env.NODE_ENV !== 'test') {
