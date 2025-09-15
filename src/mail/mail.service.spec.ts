@@ -1,19 +1,46 @@
 import { describe, beforeEach, expect, it} from 'vitest'
-import { Test, TestingModule } from '@nestjs/testing';
+// import { Test, TestingModule } from '@nestjs/testing';
 import { MailService } from './mail.service';
+import { ConfigService } from '@nestjs/config';
+
+// Simple mock to avoid dependencies
+vi.mock('nodemailer', () => ({
+  createTransport: vi.fn().mockReturnValue({
+    sendMail: vi.fn().mockResolvedValue({}),
+  }),
+}));
 
 describe('MailService', () => {
   let service: MailService;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [MailService],
-    }).compile();
+  beforeEach(() => {
+    // ConfigService mock
+    const mockConfigService = {
+      get: (key: string, defaultValue?: any) => {
+        const config: Record<string, any> = {
+          MAIL_HOST: 'localhost',
+          MAIL_PORT: 1025,
+          MAIL_FROM: 'test@example.com',
+          APP_URL: 'http://localhost:3000',
+        };
+        return config[key] || defaultValue;
+      },
+    };
 
-    service = module.get<MailService>(MailService);
+    service = new MailService(mockConfigService as unknown as ConfigService);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('should send verification email', async () => {
+    const result = await service.sendVerificationEmail('test@example.com', 'token123');
+    expect(result).toBeUndefined();
+  });
+
+  it('should send password reset email', async () => {
+    const result = await service.sendPasswordResetEmail('test@example.com', 'token123');
+    expect(result).toBeUndefined();
   });
 });
