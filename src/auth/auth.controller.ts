@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Public } from './decorators/public.decorator';
+import { LoggerService } from '../common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -28,7 +29,10 @@ import {
 @ApiTags('Auth') // Group all endpoints under 'Auth' in Swagger
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly logger: LoggerService
+  ) {}
 
   @ApiOperation({ summary: 'New user registration' })
   @ApiResponse({ status: 201, description: 'User successfully registered' })
@@ -92,9 +96,7 @@ export class AuthController {
       );
       return result;
     } catch (error) {
-      if (process.env.NODE_ENV !== 'test') {
-        console.error('Logout error:', error);
-      }
+      this.logger.error('Logout error:', error);      
       throw error;
     }
   }

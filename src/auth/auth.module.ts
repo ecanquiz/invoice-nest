@@ -4,6 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import jwtConfig from './config/jwt.config';
+import { CommonModule } from '../common/common.module';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { TokenBlacklistService } from './token-blacklist.service';
@@ -18,6 +19,7 @@ import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
+    CommonModule,
     TypeOrmModule.forFeature([User, Role]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({

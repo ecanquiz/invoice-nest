@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { LoggerService } from '../common';
 import { User } from '../users/entities/user.entity';
 import { Role } from '../roles/entities/role.entity';
 import { UsersService } from '../users/users.service';
@@ -30,6 +31,7 @@ export class AuthService {
     private jwtService: JwtService,
     private mailService: MailService,
     private readonly tokenBlacklist: TokenBlacklistService,
+    private readonly logger: LoggerService
     // private readonly configService: ConfigService,
   ) {}
 
@@ -81,14 +83,12 @@ export class AuthService {
         user.roles = [userRole];
         await this.usersRepository.save(user);
       } else {
-        if (process.env.NODE_ENV !== 'test') {
-          // Log warning but not failing registration        
-          console.warn('Default role "user" not found. User created without role.');
-        }
+        // Log warning but not failing registration        
+        this.logger.warn('Default role "user" not found. User created without role.');
       }
     } catch (error) {
       // Log error but not fail registration
-      console.error('Error assigning default role:', error);
+      this.logger.error('Error assigning default role:', error);
     }
   }
 
@@ -98,25 +98,19 @@ export class AuthService {
     const user = await this.usersService.findByEmail(email);
     
     if (!user) {
-      if (process.env.NODE_ENV !== 'test') {
-        console.log('User not found');
-      }
+      this.logger.log('User not found');
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
   
     if (!isPasswordValid) {
-      if (process.env.NODE_ENV !== 'test') {
-        console.log('Password does not match');
-      }
+      this.logger.log('Password does not match');      
       throw new UnauthorizedException('Invalid credentials');
     }
 
     if (!user.isEmailVerified) {
-      if (process.env.NODE_ENV !== 'test') {  
-        console.log('Email not verified');
-      }
+      this.logger.log('Email not verified');      
       throw new UnauthorizedException('Please verify your email first');
     }
     
@@ -144,9 +138,7 @@ export class AuthService {
     const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
     
     this.tokenBlacklist.add(token);
-    if (process.env.NODE_ENV !== 'test') {  
-      console.log(`User ${userId} logged out. Token invalidated.`);
-    }
+    this.logger.log(`User ${userId} logged out. Token invalidated.`);    
 
     return { 
       message: 'Logout successful',
