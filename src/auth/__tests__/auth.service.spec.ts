@@ -5,6 +5,7 @@ import { IsNull } from 'typeorm';
 import { BadRequestException, UnauthorizedException} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { LoggerService } from '../../common';
 import { AuthService } from '../auth.service';
 import { TokenBlacklistService } from '../token-blacklist.service';
 import { User } from '../../users/entities/user.entity';
@@ -25,6 +26,13 @@ vi.mock('bcrypt', async () => {
 describe('AuthService', () => {
   let authService: AuthService;
   
+  const mockLoggerService = {
+    log: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  };
+
   const mockUsersService = {
     findByEmail: vi.fn()
   };
@@ -75,6 +83,10 @@ describe('AuthService', () => {
           useValue: mockRoleRepository
         },
         {
+          provide: LoggerService,
+          useValue: mockLoggerService
+        },
+        {
           provide: UsersService,
           useValue: mockUsersService
         },
@@ -95,6 +107,9 @@ describe('AuthService', () => {
 
     authService = moduleRef.get<AuthService>(AuthService);
     
+    if (!authService['logger']) {
+      (authService['logger'] as any) = mockLoggerService as unknown as LoggerService;
+    }
     if (!authService['usersService']) {
       authService['usersService'] = mockUsersService as unknown as UsersService;
     }

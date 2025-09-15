@@ -1,13 +1,21 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { describe, beforeEach, expect, it, vi } from 'vitest';
+import { Test, TestingModule } from '@nestjs/testing';
+import { AuthGuard } from '@nestjs/passport';
+import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { LoggerService } from '../../common';
 import { AuthController } from '../auth.controller';
 import { AuthService } from '../auth.service';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
-import { AuthGuard } from '@nestjs/passport';
-import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
+
+const mockLoggerService = {
+  log: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+  debug: vi.fn(),
+};
 
 // AuthService Mock
 const mockAuthService = {
@@ -27,6 +35,7 @@ const mockAuthGuard = {
 describe('AuthController', () => {
   let controller: AuthController;
   let authService: AuthService;
+  let loggerService: LoggerService;
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -37,6 +46,10 @@ describe('AuthController', () => {
         {
           provide: AuthService,
           useValue: mockAuthService
+        },
+        {
+          provide: LoggerService,
+          useValue: mockLoggerService
         }
       ]
     })
@@ -46,10 +59,15 @@ describe('AuthController', () => {
 
     controller = module.get<AuthController>(AuthController);
     authService = module.get<AuthService>(AuthService);
+    loggerService = module.get<LoggerService>(LoggerService);
+
   
     // // We ensure that the mocks are injected
     if (!controller['authService']) {
       (controller['authService'] as any) = authService;
+    }
+    if (!controller['logger']) {
+      (controller['logger'] as any) = loggerService;
     }
   });
 
@@ -140,17 +158,12 @@ describe('AuthController', () => {
   describe('logout', () => {
     it('should call authService.logout with correct parameters', async () => {
       const authHeader = 'Bearer mock-token';
-      //const userId = 'user-id-123';
       const expectedResult = { 
         message: 'Logout successful', 
         tokenExpiresIn: '3600 seconds remaining' 
       };
 
       mockAuthService.logout.mockResolvedValue(expectedResult);
-
-      /*const mockRequest = {
-        user: { id: userId }
-      };*/
 
       const result = await controller.logout(authHeader);
 
@@ -160,13 +173,8 @@ describe('AuthController', () => {
 
     it('should handle logout errors', async () => {
       const authHeader = 'Bearer mock-token';
-      //const userId = 'user-id-123';
 
       mockAuthService.logout.mockRejectedValue(new UnauthorizedException('Invalid token'));
-
-      //const mockRequest = {
-      //  user: { id: userId }
-      //};
 
       await expect(controller.logout(authHeader))
         .rejects.toThrow(UnauthorizedException);
