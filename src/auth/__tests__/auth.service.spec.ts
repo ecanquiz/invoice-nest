@@ -48,7 +48,6 @@ describe('AuthService', () => {
     create: vi.fn(),
     save: vi.fn(),
     update: vi.fn(),
-    //findOneBy: vi.fn()
   };
 
   const mockRoleRepository = {

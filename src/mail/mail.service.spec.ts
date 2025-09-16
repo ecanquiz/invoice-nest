@@ -2,6 +2,7 @@ import { describe, beforeEach, expect, it} from 'vitest'
 // import { Test, TestingModule } from '@nestjs/testing';
 import { MailService } from './mail.service';
 import { ConfigService } from '@nestjs/config';
+import { LoggerService } from '../common';
 
 // Simple mock to avoid dependencies
 vi.mock('nodemailer', () => ({
@@ -13,9 +14,15 @@ vi.mock('nodemailer', () => ({
 describe('MailService', () => {
   let service: MailService;
 
-  beforeEach(() => {
-    // ConfigService mock
-    const mockConfigService = {
+  const mockLoggerService = {
+    log: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  };
+
+  beforeEach(() => {    
+    const mockConfigService = { // ConfigService mock
       get: (key: string, defaultValue?: any) => {
         const config: Record<string, any> = {
           MAIL_HOST: 'localhost',
@@ -27,7 +34,10 @@ describe('MailService', () => {
       },
     };
 
-    service = new MailService(mockConfigService as unknown as ConfigService);
+    service = new MailService(
+      mockConfigService as unknown as ConfigService,
+      mockLoggerService as unknown as LoggerService
+    );
   });
 
   it('should be defined', () => {
