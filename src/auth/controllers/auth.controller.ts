@@ -5,19 +5,19 @@ import {
   Get,
   Query,
   UseGuards,
-  Req,
-  Headers
+  Headers,
+  // Req
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { Public } from './decorators/public.decorator';
-import { LoggerService } from '../common';
-import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
+import { Public } from '../decorators/public.decorator';
+import { LoggerService } from '../../common';
+import { AuthService } from '../services/auth.service';
+import { RegisterDto } from '../dto/register.dto';
+import { LoginDto } from '../dto/login.dto';
+import { ForgotPasswordDto } from '../dto/forgot-password.dto';
+import { ResetPasswordDto } from '../dto/reset-password.dto';
 import * as bcrypt from 'bcrypt';
-// import type { AuthenticatedRequest } from '../common/types/express';
+ //import type { AuthenticatedRequest } from '../../common/types/express';
 import {
   ApiTags,
   ApiOperation,

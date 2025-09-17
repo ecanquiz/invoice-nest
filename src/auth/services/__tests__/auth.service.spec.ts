@@ -5,13 +5,13 @@ import { IsNull } from 'typeorm';
 import { BadRequestException, UnauthorizedException} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { LoggerService } from '../../common';
+import { LoggerService } from '../../../common';
 import { AuthService } from '../auth.service';
 import { TokenBlacklistService } from '../token-blacklist.service';
-import { User } from '../../users/entities/user.entity';
-import { Role } from '../../roles/entities/role.entity';
-import { UsersService } from '../../users/users.service';
-import { MailService } from '../../mail/mail.service';
+import { User } from '../../../users/entities/user.entity';
+import { Role } from '../../../roles/entities/role.entity';
+import { UsersService } from '../../../users/services/users.service';
+import { MailService } from '../../../mail/services/mail.service';
 
 // Global Mocks
 vi.mock('bcrypt', async () => {

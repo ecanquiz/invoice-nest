@@ -1,16 +1,16 @@
 import { Controller, Get, Query, Param, Post, Body, ParseUUIDPipe, Patch, Delete, HttpCode, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiBody } from '@nestjs/swagger';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { Permissions } from '../auth/decorators/permissions.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { PermissionsGuard } from '../auth/guards/permissions.guard';
-import { UsersService } from './users.service';
-import { UserFilterDto } from './dto/user-filter.dto';
-import { UserIdDto } from './dto/user-id.dto';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { Permissions } from '../../auth/decorators/permissions.decorator';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../auth/guards/roles.guard';
+import { PermissionsGuard } from '../../auth/guards/permissions.guard';
+import { UsersService } from '../services/users.service';
+import { UserFilterDto } from '../dto/user-filter.dto';
+import { UserIdDto } from '../dto/user-id.dto';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
+import { User } from '../entities/user.entity';
 
 @ApiTags('Users')
 @Controller('users')

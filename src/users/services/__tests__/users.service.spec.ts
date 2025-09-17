@@ -3,11 +3,11 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { describe, beforeEach, expect, it, vi } from 'vitest';
 import { ConflictException, InternalServerErrorException , NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { User } from '../entities/user.entity';
+import { User } from '../../entities/user.entity';
 import { UsersService } from '../users.service';
-import { UserFilterDto } from '../dto/user-filter.dto'
-import { CreateUserDto } from '../dto/create-user.dto';
-import { Role } from '../../roles/entities/role.entity';
+import { UserFilterDto } from '../../dto/user-filter.dto'
+import { CreateUserDto } from '../../dto/create-user.dto';
+import { Role } from '../../../roles/entities/role.entity';
 import { IsNull } from 'typeorm';
 
 describe('UsersService', () => {

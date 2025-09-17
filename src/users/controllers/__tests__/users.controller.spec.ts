@@ -7,10 +7,10 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import { UsersController } from '../users.controller';
-import { UsersService } from '../users.service';
-import { UserFilterDto } from '../dto/user-filter.dto';
-import { CreateUserDto } from '../dto/create-user.dto';
-import { UpdateUserDto } from '../dto/update-user.dto';
+import { UsersService } from '../../services/users.service';
+import { UserFilterDto } from '../../dto/user-filter.dto';
+import { CreateUserDto } from '../../dto/create-user.dto';
+import { UpdateUserDto } from '../../dto/update-user.dto';
 
 const mockUser = {
   id: '1',

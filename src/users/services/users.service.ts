@@ -8,11 +8,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, ILike, Repository, IsNull, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { User } from './entities/user.entity';
-import { Role } from '../roles/entities/role.entity';
-import { UserFilterDto } from './dto/user-filter.dto';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './../entities/user.entity';
+import { Role } from '../../roles/entities/role.entity';
+import { UserFilterDto } from '../dto/user-filter.dto';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
 
 @Injectable()
 export class UsersService {

@@ -9,15 +9,15 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { LoggerService } from '../common';
-import { User } from '../users/entities/user.entity';
-import { Role } from '../roles/entities/role.entity';
-import { UsersService } from '../users/users.service';
-import { MailService } from '../mail/mail.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { LoggerService } from '../../common';
+import { User } from '../../users/entities/user.entity';
+import { Role } from '../../roles/entities/role.entity';
+import { UsersService } from '../../users/services/users.service';
+import { MailService } from '../../mail/services/mail.service';
+import { RegisterDto } from '../dto/register.dto';
+import { LoginDto } from '../dto/login.dto';
+import { ResetPasswordDto } from '../dto/reset-password.dto';
+import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { TokenBlacklistService } from './token-blacklist.service';
 
 @Injectable()

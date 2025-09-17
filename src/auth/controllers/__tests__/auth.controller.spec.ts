@@ -2,13 +2,13 @@ import { describe, beforeEach, expect, it, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthGuard } from '@nestjs/passport';
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { LoggerService } from '../../common';
+import { LoggerService } from '../../../common';
 import { AuthController } from '../auth.controller';
-import { AuthService } from '../auth.service';
-import { RegisterDto } from '../dto/register.dto';
-import { LoginDto } from '../dto/login.dto';
-import { ForgotPasswordDto } from '../dto/forgot-password.dto';
-import { ResetPasswordDto } from '../dto/reset-password.dto';
+import { AuthService } from '../../services/auth.service';
+import { RegisterDto } from '../../dto/register.dto';
+import { LoginDto } from '../../dto/login.dto';
+import { ForgotPasswordDto } from '../../dto/forgot-password.dto';
+import { ResetPasswordDto } from '../../dto/reset-password.dto';
 
 const mockLoggerService = {
   log: vi.fn(),

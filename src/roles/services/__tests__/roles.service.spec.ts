@@ -4,11 +4,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { In } from 'typeorm';
 import { RolesService } from '../roles.service';
-import { Role } from '../entities/role.entity';
-import { Permission } from '../../permissions/entities/permission.entity';
-import { CreateRoleDto } from '../dto/create-role.dto';
-import { UpdateRoleDto } from '../dto/update-role.dto';
-
+import { Role } from '../../entities/role.entity';
+import { Permission } from '../../../permissions/entities/permission.entity';
+import { CreateRoleDto } from '../../dto/create-role.dto';
+import { UpdateRoleDto } from '../../dto/update-role.dto';
 
 describe('RolesService', () => {
   let service: RolesService;
