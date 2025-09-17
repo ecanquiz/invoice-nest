@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
-import { LoggerService } from '../common';
+import { LoggerService } from '../../common';
 
 @Injectable()
 export class MailService {

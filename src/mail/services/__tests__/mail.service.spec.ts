@@ -1,8 +1,8 @@
 import { describe, beforeEach, expect, it} from 'vitest'
 // import { Test, TestingModule } from '@nestjs/testing';
-import { MailService } from './mail.service';
+import { MailService } from '../mail.service';
 import { ConfigService } from '@nestjs/config';
-import { LoggerService } from '../common';
+import { LoggerService } from '../../../common';
 
 // Simple mock to avoid dependencies
 vi.mock('nodemailer', () => ({
