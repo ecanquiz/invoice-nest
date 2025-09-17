@@ -205,9 +205,7 @@ export class AuthService {
 
   async verifyEmail(token: string): Promise<{ message: string; }> {
     try {
-      console.log('🔐 [NestJS-DEBUG] Verifying token:', token);
       const payload = this.jwtService.verify(token);
-      console.log('✅ [NestJS-DEBUG] Token valid for user:', payload.sub);
 
       const user = await this.usersRepository.findOne({
         where: { id: payload.sub, emailVerificationToken: token }
@@ -217,29 +215,10 @@ export class AuthService {
         throw new BadRequestException('Invalid token');
       }
 
-      console.log('👤 [NestJS-DEBUG] User:', user.email);
-      console.log('🔍 [NestJS-DEBUG] Current verified status:', user.isEmailVerified);
-      console.log('🔍 [NestJS-DEBUG] Current token in DB:', user.emailVerificationToken);
-      if (user.emailVerificationToken !== token) {
-        throw new BadRequestException('Token does not match');
-      }
-
-      console.log('💾 [NestJS-DEBUG] Updating user in DB...');
-
-      const updateResult = await this.usersRepository.update(user.id, {
+      await this.usersRepository.update(user.id, {
         isEmailVerified: true,
         emailVerificationToken: null,
       });
-
-      console.log('✅ [NestJS-DEBUG] Update result:', updateResult);
-
-      //user.isEmailVerified = true;
-      //user.emailVerificationToken = null;
-      //await this.usersRepository.save(user);
-
-      const updatedUser = await this.usersRepository.findOneBy({ id: payload.sub });
-      console.log('🔍 [NestJS-DEBUG] After update - verified:', updatedUser?.isEmailVerified);
-      console.log('🔍 [NestJS-DEBUG] After update - token:', updatedUser?.emailVerificationToken);
     
       return { message: 'Email successfully verified' };
     } catch (error) {

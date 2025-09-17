@@ -46,7 +46,8 @@ describe('AuthService', () => {
   const mockUserRepository = {
     findOne: vi.fn(),
     create: vi.fn(),
-    save: vi.fn()
+    save: vi.fn(),
+    update: vi.fn(),
   };
 
   const mockRoleRepository = {
@@ -423,8 +424,7 @@ describe('AuthService', () => {
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({
         where: { id: '1', emailVerificationToken: 'valid-token' }
       });
-      expect(mockUserRepository.save).toHaveBeenCalledWith({
-        ...mockUser,
+      expect(mockUserRepository.update).toHaveBeenCalledWith(mockUser.id, {        
         isEmailVerified: true,
         emailVerificationToken: null
       });
