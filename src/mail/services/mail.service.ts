@@ -39,7 +39,7 @@ export class MailService {
         <a href="${verificationUrl}" style="
           display: inline-block;
           padding: 10px 20px;
-          background-color: #007bff;
+          background-color: #dc3545;
           color: white;
           text-decoration: none;
           border-radius: 5px;
@@ -48,8 +48,8 @@ export class MailService {
           <p>Si tienes problemas con el botón, copia y pega la siguiente URL en tu navegador:</p>
   
           <p style="background-color: #f8f9fa; padding: 12px; border-radius: 4px; font-size: 12px; color: #666; word-break: break-all;">
-          ${verificationUrl}
-        </p>
+            ${verificationUrl}
+          </p>
         <p style="color: #999; font-size: 12px; border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px;">
           Este enlace expirará en 24 horas. Si no solicitaste este registro, por favor ignora este email.
           </p>
@@ -68,7 +68,7 @@ export class MailService {
 
   async sendPasswordResetEmail(email: string, token: string): Promise<void> {
     const appUrl = this.configService.get('APP_URL', 'http://localhost:3000');
-    const resetUrl = `${appUrl}/reset-password?token=${token}`;
+    const resetUrl = `${appUrl}/auth/reset-password?token=${token}`;
     const mailOptions = {
       from: this.configService.get('MAIL_FROM', 'no-reply@tuapp.com'),
       to: email,
@@ -84,9 +84,14 @@ export class MailService {
           text-decoration: none;
           border-radius: 5px;
         ">Restablecer Contraseña</a>
-        <p>O copia esta URL en tu navegador:</p>
-        <p>${resetUrl}</p>
-        <p>Este enlace expirará en 1 hora.</p>
+        <p>Si tienes problemas con el botón, copia y pega la siguiente URL en tu navegador:</p>
+  
+        <p style="background-color: #f8f9fa; padding: 12px; border-radius: 4px; font-size: 12px; color: #666; word-break: break-all;">
+          ${resetUrl}
+        </p>
+        <p style="color: #999; font-size: 12px; border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px;">
+          Este enlace expirará en 1 hora. Si no solicitaste este registro, por favor ignora este email.
+        </p>
       `,
     };
 
