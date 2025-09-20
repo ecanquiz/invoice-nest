@@ -39,7 +39,7 @@ export class MailService {
         <a href="${verificationUrl}" style="
           display: inline-block;
           padding: 10px 20px;
-          background-color: #dc3545;
+          background-color: #007bff;
           color: white;
           text-decoration: none;
           border-radius: 5px;
@@ -79,7 +79,7 @@ export class MailService {
         <a href="${resetUrl}" style="
           display: inline-block;
           padding: 10px 20px;
-          background-color: #dc3545;
+          background-color: #007bff;
           color: white;
           text-decoration: none;
           border-radius: 5px;

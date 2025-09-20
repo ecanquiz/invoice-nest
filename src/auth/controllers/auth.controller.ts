@@ -3,10 +3,11 @@ import {
   Post,
   Body,
   Get,
+  Put,
   Query,
   UseGuards,
   Headers,
-  // Req
+  Req
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Public } from '../decorators/public.decorator';
@@ -16,6 +17,7 @@ import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
+import { UpdateProfileDto } from '../dto/update-profile.dto';
 import * as bcrypt from 'bcrypt';
  //import type { AuthenticatedRequest } from '../../common/types/express';
 import {
@@ -100,6 +102,29 @@ export class AuthController {
       this.logger.error('Logout error:', error);      
       throw error;
     }
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('profile')
+  @ApiOperation({ summary: 'Obtener perfil del usuario autenticado' })
+  @ApiResponse({ status: 200, description: 'Perfil del usuario' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  async getProfile(@Req() req) {
+    // Delete sensitive information before returning
+    const { password, resetPasswordToken, ...user } = req.user;
+    return user;
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Put('profile')
+  @ApiOperation({ summary: 'Actualizar perfil del usuario autenticado' })
+  @ApiResponse({ status: 200, description: 'Perfil actualizado correctamente' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  async updateProfile(@Req() req, @Body() updateProfileDto: UpdateProfileDto) {
+    return this.authService.updateProfile(req.user.id, updateProfileDto);
   }
 
   @ApiOperation({ summary: 'Testing bcrypt functionality' })

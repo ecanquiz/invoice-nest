@@ -24,8 +24,8 @@ export class UsersController {
     description: 'User list successfully obtained',
   })
   @Get()
-  @Roles('admin') // Solo admin
-  @Permissions('users.read') // Con permiso de lectura
+  @Roles('admin') // Only admin
+  @Permissions('users.read') // With reading permission
   async findAll(@Query() filters: UserFilterDto) {
     return this.usersService.findAll(filters);
   }
@@ -169,8 +169,6 @@ export class UsersController {
     return this.usersService.update(id, updateUserDto);
   }
 
-  @Delete(':id')
-  @HttpCode(200)
   @ApiOperation({ 
     summary: 'Delete a user', 
     description: 'Performs a soft delete of the user. The user record remains in the database but is marked as deleted.' 
@@ -209,6 +207,8 @@ export class UsersController {
       }
     }
   })
+  @Delete(':id')
+  @HttpCode(200)
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.remove(id);
   }
