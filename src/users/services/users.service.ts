@@ -33,12 +33,12 @@ export class UsersService {
     const { page = 1, limit = 10, email, name, isEmailVerified } = filters;
     const skip = (page - 1) * limit;
 
-    // Crear query builder
+    // Create query builder
     const queryBuilder = this.usersRepository.createQueryBuilder('user');
 
     queryBuilder.andWhere('user.deletedAt IS NULL');
 
-    // Aplicar filtros
+    // Apply filters
     if (email) {
       queryBuilder.andWhere('user.email ILIKE :email', { email: `%${email}%` });
     }
@@ -51,14 +51,14 @@ export class UsersService {
       queryBuilder.andWhere('user.isEmailVerified = :isEmailVerified', { isEmailVerified });
     }
 
-    // Obtener resultados y total
+    // Get results and total
     const [users, total] = await queryBuilder
       .orderBy('user.createdAt', 'DESC')
       .skip(skip)
       .take(limit)
       .getManyAndCount();
 
-    // Calcular total de páginas
+    // Calculate total pages
     const totalPages = Math.ceil(total / limit);
 
     return {
@@ -132,15 +132,29 @@ async create(createUserDto: CreateUserDto): Promise<User> {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.usersRepository.findOne({ where: {
-      email, 
-      deletedAt: IsNull()
-    } });
+    return this.usersRepository.findOne({
+      where: { email,  deletedAt: IsNull() }
+    });
   }
+
+  /*async findByEmail(email: string): Promise<User | null> {
+    return this.usersRepository.findOne({ 
+      where: { email },
+      relations: ['roles', 'roles.permissions'] 
+    });
+  }*/
 
   async update(id: string, updateData: Partial<User>): Promise<User> {
     const user = await this.findById(id);
+    //const user = await this.usersRepository.findOne({ where: { id } });
+    
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Update only the provided fields
     Object.assign(user, updateData);
+    
     return this.usersRepository.save(user);
   }
   

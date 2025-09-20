@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   NotFoundException,
+  ConflictException,
   InternalServerErrorException
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -19,6 +20,7 @@ import { LoginDto } from '../dto/login.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { TokenBlacklistService } from './token-blacklist.service';
+import { UpdateProfileDto } from '../dto/update-profile.dto';
 
 @Injectable()
 export class AuthService {
@@ -244,4 +246,29 @@ export class AuthService {
       accessToken: this.jwtService.sign(payload),
     };
   }
+
+  async updateProfile(userId: string, updateProfileDto: UpdateProfileDto) {
+    // Check if the email already exists (if it is being updated)
+    if (updateProfileDto.email) {
+      const existingUser = await this.usersService.findByEmail(updateProfileDto.email);
+      if (existingUser && existingUser.id !== userId) {
+        throw new ConflictException('The email is already in use');
+      }
+    }
+
+    // Hash the new password if provided
+    if (updateProfileDto.password) {
+      updateProfileDto.password = await bcrypt.hash(updateProfileDto.password, 10);
+    }
+
+    // Update profile
+    const updatedUser = await this.usersService.update(userId, updateProfileDto);
+    
+    // Delete sensitive information before returning it
+    const { password, ...user } = updatedUser;
+    return user;
+  }
 }
+
+
+  
