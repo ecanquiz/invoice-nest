@@ -18,7 +18,7 @@ import { PermissionsModule } from './permissions/permissions.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : '.env',
     }),
     DatabaseModule,
     DatabaseSeedsModule,
