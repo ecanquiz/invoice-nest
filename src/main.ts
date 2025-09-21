@@ -1,11 +1,14 @@
 import 'reflect-metadata'; 
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import * as morgan from 'morgan'
+import {CORS} from './constants'
+import { AppModule } from './app.module';
 import { UserIdDto } from './users/dto/user-id.dto';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use(morgan.default('dev'))
 
   // Swagger Configuration
   const config = new DocumentBuilder()
@@ -31,10 +34,9 @@ async function bootstrap() {
     },
   });
 
-  app.enableCors({
-    origin: process.env.APP_URL || 'http://localhost:3000', // URL of your Nuxt frontend
-    credentials: true,
-  });
+  app.enableCors(CORS);
+
+  // app.setGlobalPrefix('api/v1');
 
   await app.listen(process.env.PORT ?? 3000);
   console.log(`Application is running on: ${await app.getUrl()}`);
