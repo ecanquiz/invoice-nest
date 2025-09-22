@@ -21,6 +21,7 @@ import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { TokenBlacklistService } from './token-blacklist.service';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
+import { ChangePasswordDto } from '../dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -267,6 +268,33 @@ export class AuthService {
     // Delete sensitive information before returning it
     const { password, ...user } = updatedUser;
     return user;
+  }
+
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto): Promise<{ message: string }> {
+    // Validar que las nuevas contraseñas coincidan
+    if (changePasswordDto.newPassword !== changePasswordDto.confirmPassword) {
+      throw new BadRequestException('Las nuevas contraseñas no coinciden');
+    }
+
+    // Buscar usuario
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    // Verificar contraseña actual
+    const isCurrentPasswordValid = await bcrypt.compare(changePasswordDto.currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+      throw new BadRequestException('La contraseña actual es incorrecta');
+    }
+
+    // Hashear nueva contraseña
+    const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+
+    // Actualizar contraseña
+    await this.usersService.update(userId, { password: hashedPassword });
+
+    return { message: 'Contraseña actualizada correctamente' };
   }
 }
 
