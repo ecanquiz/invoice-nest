@@ -18,6 +18,7 @@ import { LoginDto } from '../dto/login.dto';
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
+import { ChangePasswordDto } from '../dto/change-password.dto';
 import * as bcrypt from 'bcrypt';
  //import type { AuthenticatedRequest } from '../../common/types/express';
 import {
@@ -111,8 +112,8 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Perfil del usuario' })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   async getProfile(@Req() req) {
-    // Delete sensitive information before returning
-    const { password, resetPasswordToken, ...user } = req.user;
+    // Delete sensitive information before returning as 'resetPasswordToken', ect.
+    const { password, roles, ...user } = req.user;
     return user;
   }
 
@@ -125,6 +126,20 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'No autorizado' })
   async updateProfile(@Req() req, @Body() updateProfileDto: UpdateProfileDto) {
     return this.authService.updateProfile(req.user.id, updateProfileDto);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Put('profile/password')
+  @ApiOperation({ summary: 'Cambiar contraseña del usuario autenticado' })
+  @ApiResponse({ status: 200, description: 'Contraseña actualizada correctamente' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  async changePassword(
+    @Req() req,
+    @Body() changePasswordDto: ChangePasswordDto
+  ): Promise<{ message: string }> {
+    return this.authService.changePassword(req.user.id, changePasswordDto);
   }
 
   @ApiOperation({ summary: 'Testing bcrypt functionality' })
