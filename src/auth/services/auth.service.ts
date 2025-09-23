@@ -271,32 +271,29 @@ export class AuthService {
   }
 
   async changePassword(userId: string, changePasswordDto: ChangePasswordDto): Promise<{ message: string }> {
-    // Validar que las nuevas contraseñas coincidan
+    // Validate that the new passwords match
     if (changePasswordDto.newPassword !== changePasswordDto.confirmPassword) {
-      throw new BadRequestException('Las nuevas contraseñas no coinciden');
+      throw new BadRequestException('The new passwords do not match');
     }
 
-    // Buscar usuario
+    // Search user
     const user = await this.usersService.findById(userId);
     if (!user) {
-      throw new NotFoundException('Usuario no encontrado');
+      throw new NotFoundException('User not found');
     }
 
-    // Verificar contraseña actual
+    // Verify current password
     const isCurrentPasswordValid = await bcrypt.compare(changePasswordDto.currentPassword, user.password);
     if (!isCurrentPasswordValid) {
-      throw new BadRequestException('La contraseña actual es incorrecta');
+      throw new BadRequestException('The current password is incorrect');
     }
 
-    // Hashear nueva contraseña
+    // Hash new password
     const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
 
-    // Actualizar contraseña
+    // Update password
     await this.usersService.update(userId, { password: hashedPassword });
 
     return { message: 'Contraseña actualizada correctamente' };
   }
-}
-
-
-  
+}  

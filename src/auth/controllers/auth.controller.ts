@@ -108,9 +108,9 @@ export class AuthController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
-  @ApiOperation({ summary: 'Obtener perfil del usuario autenticado' })
-  @ApiResponse({ status: 200, description: 'Perfil del usuario' })
-  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiOperation({ summary: 'Get authenticated user profile' })
+  @ApiResponse({ status: 200, description: 'User profile' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getProfile(@Req() req) {
     // Delete sensitive information before returning as 'resetPasswordToken', ect.
     const { password, roles, ...user } = req.user;
@@ -120,10 +120,10 @@ export class AuthController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Put('profile')
-  @ApiOperation({ summary: 'Actualizar perfil del usuario autenticado' })
-  @ApiResponse({ status: 200, description: 'Perfil actualizado correctamente' })
-  @ApiResponse({ status: 400, description: 'Datos inválidos' })
-  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiOperation({ summary: 'Update authenticated user profile' })
+  @ApiResponse({ status: 200, description: 'Profile updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async updateProfile(@Req() req, @Body() updateProfileDto: UpdateProfileDto) {
     return this.authService.updateProfile(req.user.id, updateProfileDto);
   }
@@ -131,10 +131,10 @@ export class AuthController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Put('profile/password')
-  @ApiOperation({ summary: 'Cambiar contraseña del usuario autenticado' })
-  @ApiResponse({ status: 200, description: 'Contraseña actualizada correctamente' })
-  @ApiResponse({ status: 400, description: 'Datos inválidos' })
-  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiOperation({ summary: 'Change the password of the authenticated user' })
+  @ApiResponse({ status: 200, description: 'Password updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async changePassword(
     @Req() req,
     @Body() changePasswordDto: ChangePasswordDto
