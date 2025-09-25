@@ -40,5 +40,17 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3000);
   console.log(`Application is running on: ${await app.getUrl()}`);
+
+  console.log('🚀 NestJS server running on http://localhost:3001');
+  console.log('🔐 Encryption:', process.env.NODE_ENV === 'production' ? 'ENABLED' : 'DISABLED');
+
+
+
+  console.log(`🚀 Application is running on: ${await app.getUrl()}`);
+  console.log('🔐 [MAIN] Environment variables:');
+  console.log('🔐 [MAIN] NODE_ENV:', process.env.NODE_ENV);
+  console.log('🔐 [MAIN] ENCRYPTION_ENABLED:', process.env.ENCRYPTION_ENABLED);
+  console.log('🔐 [MAIN] ENC_KEY length:', process.env.ENC_KEY?.length);
+  console.log('🔐 [MAIN] Encryption status:', process.env.ENCRYPTION_ENABLED === 'true' ? 'ENABLED' : 'DISABLED');
 }
 bootstrap();
