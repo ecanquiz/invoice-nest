@@ -43,6 +43,7 @@ export class AuthController {
   @Post('register')
   @Public()
   async register(@Body() registerDto: RegisterDto) {
+    console.log('🔐 [Nest] Register endpoint called with:', registerDto);
     return this.authService.register(registerDto);
   }
 
