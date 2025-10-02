@@ -13,7 +13,7 @@ async function bootstrap() {
     console.log('🔍 Looking for admin role...');
     
     const adminRole = await dataSource.getRepository('Role').findOne({
-      where: { name: 'admin', isActive: true }
+      where: { name: 'admin', is_active: true }
     });
 
     if (!adminRole) {
@@ -25,7 +25,7 @@ async function bootstrap() {
     const existingAdmin = await dataSource.getRepository('User').findOne({
       where: {
         email: 'admin@example.com',
-        deletedAt: null
+        deleted_at: null
       },
       relations: ['roles']
     });
@@ -44,7 +44,7 @@ async function bootstrap() {
       email: 'admin@example.com',
       password: hashedPassword,
       name: 'System Administrator',
-      isEmailVerified: true,
+      is_email_verified: true,
       roles: [adminRole]
     });
     const savedAdmin = await dataSource.getRepository('User').save(adminUser);

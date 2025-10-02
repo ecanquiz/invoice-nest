@@ -12,8 +12,8 @@ export class CreateRolesAndPermissionsTables1757030990898 implements MigrationIn
                 "description" VARCHAR,
                 "module" VARCHAR NOT NULL,
                 "action" VARCHAR NOT NULL,
-                "createdAt" TIMESTAMP DEFAULT NOW(),
-                "updatedAt" TIMESTAMP DEFAULT NOW()
+                "created_at" TIMESTAMP DEFAULT NOW(),
+                "updated_at" TIMESTAMP DEFAULT NOW()
             )
         `);
 
@@ -23,9 +23,9 @@ export class CreateRolesAndPermissionsTables1757030990898 implements MigrationIn
                 "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                 "name" VARCHAR NOT NULL UNIQUE,
                 "description" VARCHAR,
-                "isActive" BOOLEAN DEFAULT true,
-                "createdAt" TIMESTAMP DEFAULT NOW(),
-                "updatedAt" TIMESTAMP DEFAULT NOW()
+                "is_active" BOOLEAN DEFAULT true,
+                "created_at" TIMESTAMP DEFAULT NOW(),
+                "updated_at" TIMESTAMP DEFAULT NOW()
             )
         `);
 

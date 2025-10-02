@@ -43,7 +43,7 @@ export class AuthService {
 
     try {
         const existingUser = await this.usersRepository.findOne({
-          where: { email, deletedAt: IsNull() } 
+          where: { email, deleted_at: IsNull() } 
         });
 
         if (existingUser) {
@@ -56,10 +56,10 @@ export class AuthService {
             email: email.toLowerCase().trim(),
             password: hashedPassword,
             name: name?.trim(),
-            isEmailVerified: false,
-            emailVerificationToken: null,
-            passwordResetToken: null,
-            passwordResetExpires: null,
+            is_email_verified: false,
+            email_verification_token: null,
+            password_reset_token: null,
+            password_reset_expires: null,
             roles: [] // Initialize empty array
         });
 
@@ -85,7 +85,7 @@ export class AuthService {
     try {
       // Search for the "user" role
       const userRole = await this.roleRepository.findOne({ 
-        where: { name: 'user', isActive: true } 
+        where: { name: 'user', is_active: true } 
       });
 
       if (userRole) {
@@ -119,7 +119,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    if (!user.isEmailVerified) {
+    if (!user.is_email_verified) {
       this.logger.log('Email not verified');      
       throw new UnauthorizedException('Please verify your email first');
     }
@@ -169,8 +169,8 @@ export class AuthService {
       { sub: user.id },
       { expiresIn: '1h' },
     );
-    user.passwordResetToken = resetToken;
-    user.passwordResetExpires = new Date(Date.now() + 3600000); // one hour
+    user.password_reset_token = resetToken;
+    user.password_reset_expires = new Date(Date.now() + 3600000); // one hour
 
     await this.usersRepository.save(user);
     await this.mailService.sendPasswordResetEmail(user.email, resetToken);
@@ -187,21 +187,21 @@ export class AuthService {
     }
 
     const user = await this.usersRepository.findOne({
-      where: { id: payload.sub, passwordResetToken: token },
+      where: { id: payload.sub, password_reset_token: token },
     });
 
-    if (!user || !user.passwordResetToken || !user.passwordResetExpires) {
+    if (!user || !user.password_reset_token || !user.password_reset_expires) {
       throw new BadRequestException('Invalid or expired token');
     }
 
-    if (user.passwordResetExpires && user.passwordResetExpires < new Date()) {
+    if (user.password_reset_expires && user.password_reset_expires < new Date()) {
       throw new BadRequestException('Token expired');
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
-    user.passwordResetToken = null;
-    user.passwordResetExpires = null;
+    user.password_reset_token = null;
+    user.password_reset_expires = null;
 
     await this.usersRepository.save(user);
   }
@@ -211,7 +211,7 @@ export class AuthService {
       const payload = this.jwtService.verify(token);
 
       const user = await this.usersRepository.findOne({
-        where: { id: payload.sub, emailVerificationToken: token }
+        where: { id: payload.sub, email_verification_token: token }
       });
 
       if (!user) {
@@ -219,8 +219,8 @@ export class AuthService {
       }
 
       await this.usersRepository.update(user.id, {
-        isEmailVerified: true,
-        emailVerificationToken: null,
+        is_email_verified: true,
+        email_verification_token: null,
       });
     
       return { message: 'Email successfully verified' };
@@ -235,7 +235,7 @@ export class AuthService {
       { expiresIn: '1d' }, // one day to verify email
     );
 
-    user.emailVerificationToken = token;
+    user.email_verification_token = token;
     await this.usersRepository.save(user);
 
     await this.mailService.sendVerificationEmail(user.email, token);

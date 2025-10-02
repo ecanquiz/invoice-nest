@@ -32,8 +32,8 @@ describe('RolesService', () => {
     description: 'Read users',
     module: 'users',
     action: 'read',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    created_at: new Date(),
+    updated_at: new Date(),
     roles: [],
   };
 
@@ -43,8 +43,8 @@ describe('RolesService', () => {
     description: 'Create users',
     module: 'users',
     action: 'create',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    created_at: new Date(),
+    updated_at: new Date(),
     roles: [],
   };
 
@@ -54,8 +54,8 @@ describe('RolesService', () => {
     description: 'Update users',
     module: 'users',
     action: 'update',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    created_at: new Date(),
+    updated_at: new Date(),
     roles: [],
   };
 
@@ -65,8 +65,8 @@ describe('RolesService', () => {
     description: 'Delete users',
     module: 'users',
     action: 'delete',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    created_at: new Date(),
+    updated_at: new Date(),
     roles: [],
   };
 
@@ -74,18 +74,18 @@ describe('RolesService', () => {
     id: 'role-1',
     name: 'admin',
     description: 'Administrator role',
-    isActive: true,
+    is_active: true,
     permissions: [mockPermission],
     users: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    created_at: new Date(),
+    updated_at: new Date(),
   };
 
   const mockInactiveRole: Role = {
     ...mockRole,
     id: 'role-2',
     name: 'inactive-role',
-    isActive: false,
+    is_active: false,
   };
 
   beforeEach(async () => {
@@ -117,7 +117,7 @@ describe('RolesService', () => {
 
       expect(mockRoleRepository.find).toHaveBeenCalledWith({
         relations: ['permissions'],
-        where: { isActive: true },
+        where: { is_active: true },
         order: { name: 'ASC' },
       });
       expect(result).toEqual(mockRoles);
@@ -132,7 +132,7 @@ describe('RolesService', () => {
 
       expect(mockRoleRepository.find).toHaveBeenCalledWith({
         relations: ['permissions'],
-        where: { isActive: true },
+        where: { is_active: true },
         order: { name: 'ASC' },
       });
       expect(result).toEqual([]);
@@ -146,7 +146,7 @@ describe('RolesService', () => {
       const result = await service.findAll();
 
       expect(result).toEqual(activeRoles);
-      expect(result.every(role => role.isActive)).toBe(true);
+      expect(result.every(role => role.is_active)).toBe(true);
     });
 
     it('should include permissions relation', async () => {
@@ -197,10 +197,10 @@ describe('RolesService', () => {
       expect(result[0]).toHaveProperty('id');
       expect(result[0]).toHaveProperty('name');
       expect(result[0]).toHaveProperty('description');
-      expect(result[0]).toHaveProperty('isActive');
+      expect(result[0]).toHaveProperty('is_active');
       expect(result[0]).toHaveProperty('permissions');
-      expect(result[0]).toHaveProperty('createdAt');
-      expect(result[0]).toHaveProperty('updatedAt');
+      expect(result[0]).toHaveProperty('created_at');
+      expect(result[0]).toHaveProperty('updated_at');
     });
 
     it('should not include inactive roles', async () => {
@@ -211,7 +211,7 @@ describe('RolesService', () => {
       const result = await service.findAll();
 
       expect(result).toEqual(onlyActiveRoles);
-      expect(result.some(role => !role.isActive)).toBe(false);
+      expect(result.some(role => !role.is_active)).toBe(false);
     });
   });
 
@@ -223,7 +223,7 @@ describe('RolesService', () => {
       const result = await service.findOne(roleId);
 
       expect(mockRoleRepository.findOne).toHaveBeenCalledWith({
-        where: { id: roleId, isActive: true },
+        where: { id: roleId, is_active: true },
         relations: ['permissions']
       });
       expect(result).toEqual(mockRole);
@@ -254,7 +254,7 @@ describe('RolesService', () => {
         `Role with ID ${roleId} not found`
       );
       expect(mockRoleRepository.findOne).toHaveBeenCalledWith({
-        where: { id: roleId, isActive: true },
+        where: { id: roleId, is_active: true },
         relations: ['permissions']
       });
     });
@@ -265,7 +265,7 @@ describe('RolesService', () => {
 
       await expect(service.findOne(roleId)).rejects.toThrow(NotFoundException);
       expect(mockRoleRepository.findOne).toHaveBeenCalledWith({
-        where: { id: roleId, isActive: true },
+        where: { id: roleId, is_active: true },
         relations: ['permissions']
       });
     });
@@ -286,7 +286,7 @@ describe('RolesService', () => {
       await service.findOne(roleId);
 
       expect(mockRoleRepository.findOne).toHaveBeenCalledWith({
-        where: { id: roleId, isActive: true }, // ← isActive: true is important
+        where: { id: roleId, is_active: true }, // ← isActive: true is important
         relations: ['permissions']
       });
     });
@@ -300,10 +300,10 @@ describe('RolesService', () => {
       expect(result).toHaveProperty('id');
       expect(result).toHaveProperty('name');
       expect(result).toHaveProperty('description');
-      expect(result).toHaveProperty('isActive');
+      expect(result).toHaveProperty('is_active');
       expect(result).toHaveProperty('permissions');
-      expect(result).toHaveProperty('createdAt');
-      expect(result).toHaveProperty('updatedAt');
+      expect(result).toHaveProperty('created_at');
+      expect(result).toHaveProperty('updated_at');
     });
 
     it('should find role by different IDs', async () => {
@@ -337,7 +337,7 @@ describe('RolesService', () => {
       const result = await service.findByName(roleName);
 
       expect(mockRoleRepository.findOne).toHaveBeenCalledWith({
-        where: { name: roleName, isActive: true },
+        where: { name: roleName, is_active: true },
         relations: ['permissions']
       });
       expect(result).toEqual(mockRole);
@@ -391,7 +391,7 @@ describe('RolesService', () => {
       await service.findByName(roleName);
 
       expect(mockRoleRepository.findOne).toHaveBeenCalledWith({
-        where: { name: roleName, isActive: true },
+        where: { name: roleName, is_active: true },
         relations: ['permissions']
       });
     });
@@ -756,8 +756,8 @@ describe('RolesService', () => {
     });
 
     it('should soft delete a role successfully by setting isActive to false', async () => {
-      const activeRole = { ...mockRole, isActive: true };
-      const deactivatedRole = { ...activeRole, isActive: false };
+      const activeRole = { ...mockRole, is_active: true };
+      const deactivatedRole = { ...activeRole, is_active: false };
       
       vi.spyOn(service, 'findOne').mockResolvedValue(activeRole);
       mockRoleRepository.save.mockResolvedValue(deactivatedRole);
@@ -766,7 +766,7 @@ describe('RolesService', () => {
 
       expect(service.findOne).toHaveBeenCalledWith(roleId);
       expect(mockRoleRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({ isActive: false })
+        expect.objectContaining({ is_active: false })
       );
     });
 
@@ -805,9 +805,9 @@ describe('RolesService', () => {
         name: 'test-role',
         description: 'Test role description',
         permissions: [mockPermission],
-        isActive: true
+        is_active: true
       };
-      const deactivatedRole = { ...roleWithDetails, isActive: false };
+      const deactivatedRole = { ...roleWithDetails, is_active: false };
       
       vi.spyOn(service, 'findOne').mockResolvedValue(roleWithDetails);
       mockRoleRepository.save.mockResolvedValue(deactivatedRole);
@@ -820,21 +820,21 @@ describe('RolesService', () => {
           name: roleWithDetails.name,
           description: roleWithDetails.description,
           permissions: roleWithDetails.permissions,
-          isActive: false // Only this should change
+          is_active: false // Only this should change
         })
       );
     });
 
     it('should call repository save with the modified role', async () => {
-      const activeRole = { ...mockRole, isActive: true };
+      const activeRole = { ...mockRole, is_active: true };
       vi.spyOn(service, 'findOne').mockResolvedValue(activeRole);
-      mockRoleRepository.save.mockResolvedValue({ ...activeRole, isActive: false });
+      mockRoleRepository.save.mockResolvedValue({ ...activeRole, is_active: false });
 
       await service.remove(roleId);
 
       expect(mockRoleRepository.save).toHaveBeenCalledTimes(1);
       const savedRole = mockRoleRepository.save.mock.calls[0][0];
-      expect(savedRole.isActive).toBe(false);
+      expect(savedRole.is_active).toBe(false);
     });
 
     it('should handle unexpected errors during the process', async () => {
@@ -851,10 +851,10 @@ describe('RolesService', () => {
         name: 'original-name',
         description: 'original-description',
         permissions: [mockPermission],
-        isActive: true
+        is_active: true
       };
       vi.spyOn(service, 'findOne').mockResolvedValue(originalRole);
-      mockRoleRepository.save.mockResolvedValue({ ...originalRole, isActive: false });
+      mockRoleRepository.save.mockResolvedValue({ ...originalRole, is_active: false });
 
       await service.remove(roleId);
 
@@ -862,7 +862,7 @@ describe('RolesService', () => {
       expect(savedRole.name).toBe(originalRole.name);
       expect(savedRole.description).toBe(originalRole.description);
       expect(savedRole.permissions).toEqual(originalRole.permissions);
-      expect(savedRole.isActive).toBe(false); // Only this changed
+      expect(savedRole.is_active).toBe(false); // Only this changed
     });
   });
 
@@ -1139,7 +1139,7 @@ describe('RolesService', () => {
         name: 'test-role',
         description: 'Test role description',
         permissions: [mockPermission, mockPermission2],
-        isActive: true
+        is_active: true
       };
       const updatedRole = { 
         ...roleWithDetails, 
@@ -1153,7 +1153,7 @@ describe('RolesService', () => {
 
       expect(result.name).toBe('test-role');
       expect(result.description).toBe('Test role description');
-      expect(result.isActive).toBe(true);
+      expect(result.is_active).toBe(true);
       expect(result.permissions).toHaveLength(1);
     });
 

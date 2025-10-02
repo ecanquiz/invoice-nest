@@ -33,13 +33,13 @@ describe('UsersService', () => {
     email: 'test@example.com',
     password: 'hashed-password',
     name: 'Test User',
-    isEmailVerified: true,
-    emailVerificationToken: null,
-    passwordResetToken: null,
-    passwordResetExpires: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: null,
+    is_email_verified: true,
+    email_verification_token: null,
+    password_reset_token: null,
+    password_reset_expires: null,
+    created_at: new Date(),
+    updated_at: new Date(),
+    deleted_at: null,
     // setVerifiedInDevelopment: vi.fn(),
     // hashPassword: vi.fn()
     roles: [],
@@ -47,7 +47,7 @@ describe('UsersService', () => {
 
   const mockDeletedUser = {
     ...mockUser,
-    deletedAt: new Date() // Usuario eliminado
+    deleted_at: new Date() // User deleted
   };
 
   vi.mock('bcrypt', () => ({
@@ -137,7 +137,7 @@ describe('UsersService', () => {
       expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith('user.createdAt', 'DESC');
       expect(mockQueryBuilder.skip).toHaveBeenCalledWith(0);
       expect(mockQueryBuilder.take).toHaveBeenCalledWith(10);
-      expect(result.users[0].deletedAt).toBeNull();
+      expect(result.users[0].deleted_at).toBeNull();
     });
 
     it('should filter by email', async () => {
@@ -239,7 +239,7 @@ describe('UsersService', () => {
       const result = await service.findById('1');
 
       expect(result).toEqual(mockUser);
-      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: '1', deletedAt: expect.anything() } });
+      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: '1', deleted_at: expect.anything() } });
     });
 
     it('should throw NotFoundException when user not found', async () => {
@@ -265,7 +265,7 @@ describe('UsersService', () => {
 
       expect(result).toEqual(mockUser);
       expect(mockRepository.findOne).toHaveBeenCalledWith({ 
-        where: { email: 'test@example.com', deletedAt: expect.anything() } 
+        where: { email: 'test@example.com', deleted_at: expect.anything() } 
       });
     });
 
@@ -276,7 +276,7 @@ describe('UsersService', () => {
 
       expect(result).toBeNull();
       expect(mockRepository.findOne).toHaveBeenCalledWith({ 
-        where: { email: 'nonexistent@example.com', deletedAt: expect.anything()  } 
+        where: { email: 'nonexistent@example.com', deleted_at: expect.anything()  } 
       });
     });
 
@@ -325,7 +325,7 @@ describe('UsersService', () => {
 
       expect(result).toEqual(mockCreatedUser);
       expect(mockRepository.findOne).toHaveBeenCalledWith({
-        where: { email: 'newuser@example.com', deletedAt: expect.anything() }
+        where: { email: 'newuser@example.com', deleted_at: expect.anything() }
       });
       expect(bcrypt.hash).toHaveBeenCalledWith('Password123!', 12);
       expect(mockRepository.create).toHaveBeenCalledWith(expect.objectContaining({
@@ -342,7 +342,7 @@ describe('UsersService', () => {
 
       await expect(service.create(createUserDto)).rejects.toThrow(ConflictException);
       expect(mockRepository.findOne).toHaveBeenCalledWith({
-        where: { email: 'newuser@example.com', deletedAt: expect.anything() }
+        where: { email: 'newuser@example.com', deleted_at: expect.anything() }
       });
       expect(bcrypt.hash).not.toHaveBeenCalled();
       expect(mockRepository.create).not.toHaveBeenCalled();
@@ -457,7 +457,7 @@ describe('UsersService', () => {
       const result = await service.remove(userId);
 
       expect(mockRepository.findOne).toHaveBeenCalledWith({
-        where: { id: userId, deletedAt: expect.anything() }
+        where: { id: userId, deleted_at: expect.anything() }
       });
       expect(mockRepository.softDelete).toHaveBeenCalledWith(userId);
       expect(result).toEqual({ message: 'User deleted successfully' });
@@ -475,7 +475,7 @@ describe('UsersService', () => {
 
     it('should throw NotFoundException when user is already deleted', async () => {
       const userId = '1';
-      const deletedUser = { ...mockUser, deletedAt: new Date() };
+      const deletedUser = { ...mockUser, deleted_at: new Date() };
       
       mockRepository.findOne.mockResolvedValue(null);
 
@@ -503,7 +503,7 @@ describe('UsersService', () => {
 
       expect(mockRepository.restore).toHaveBeenCalledWith(userId);
       expect(mockRepository.findOne).toHaveBeenCalledWith({
-        where: { id: userId, deletedAt: expect.anything() }
+        where: { id: userId, deleted_at: expect.anything() }
       });
       expect(result).toEqual(mockUser);
     });

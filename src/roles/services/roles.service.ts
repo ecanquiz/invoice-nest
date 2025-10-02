@@ -18,14 +18,14 @@ export class RolesService {
   async findAll(): Promise<Role[]> {
     return this.roleRepository.find({
       relations: ['permissions'],
-      where: { isActive: true },
+      where: { is_active: true },
       order: { name: 'ASC' }
     });
   }
 
   async findOne(id: string): Promise<Role> {
     const role = await this.roleRepository.findOne({
-      where: { id, isActive: true },
+      where: { id, is_active: true },
       relations: ['permissions']
     });
 
@@ -38,7 +38,7 @@ export class RolesService {
 
   async findByName(name: string): Promise<Role> {
     const role = await this.roleRepository.findOne({
-      where: { name, isActive: true },
+      where: { name, is_active: true },
       relations: ['permissions']
     });
 
@@ -123,7 +123,7 @@ export class RolesService {
       const role = await this.findOne(id);
       
       // Soft delete: marcar como inactivo en lugar de eliminar
-      role.isActive = false;
+      role.is_active = false;
       
       await this.roleRepository.save(role);
     } catch (error) {

@@ -131,13 +131,13 @@ describe('AuthService', () => {
         email: 'test@test.com',
         password: 'hashed-pass',
         name: 'Test User',
-        isEmailVerified: true,
-        emailVerificationToken: null,
-        passwordResetToken: null,
-        passwordResetExpires: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        deletedAt: null,
+        is_email_verified: true,
+        email_verification_token: null,
+        password_reset_token: null,
+        password_reset_expires: null,
+        created_at: new Date(),
+        updated_at: new Date(),
+        deleted_at: null,
         roles: [],
         //hashPassword: vi.fn()
       };
@@ -176,7 +176,7 @@ describe('AuthService', () => {
         id: '1',
         email: 'test@test.com',
         password: 'hashed-pass',
-        isEmailVerified: true
+        is_email_verified: true
       } as User;
 
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
@@ -195,7 +195,7 @@ describe('AuthService', () => {
         id: '1',
         email: 'test@test.com',
         password: 'hashed-pass',
-        isEmailVerified: false // Email not verified
+        is_email_verified: false // Email not verified
       } as User;
 
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
@@ -212,7 +212,7 @@ describe('AuthService', () => {
         id: '1',
         email: 'test@test.com',
         password: 'hashed-pass',
-        isEmailVerified: true
+        is_email_verified: true
       } as User;
 
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
@@ -240,8 +240,8 @@ describe('AuthService', () => {
       const mockUser = {
         id: '1',
         ...registerDto,
-        isEmailVerified: false,
-        emailVerificationToken: 'verification-token',
+        is_email_verified: false,
+        email_verification_token: 'verification-token',
       } as User;
 
       // Mock repository responses
@@ -256,15 +256,15 @@ describe('AuthService', () => {
       const result = await authService.register(registerDto);
 
       expect(result).toEqual({ accessToken: 'mock-token' });
-      expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { email: 'test@test.com', deletedAt: IsNull() } });
+      expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { email: 'test@test.com', deleted_at: IsNull() } });
       expect(mockUserRepository.create).toHaveBeenCalledWith({
         email: 'test@test.com',
-        emailVerificationToken: null,
+        email_verification_token: null,
         password: 'hashed-pass',
         name: 'Test User',
-        isEmailVerified: false,
-        passwordResetExpires: null,
-        passwordResetToken: null,
+        is_email_verified: false,
+        password_reset_expires: null,
+        password_reset_token: null,
         roles: [],
       });
       expect(mockUserRepository.save).toHaveBeenCalledWith(mockUser);
@@ -281,7 +281,7 @@ describe('AuthService', () => {
       mockUserRepository.findOne.mockResolvedValue(existingUser);
 
       await expect(authService.register(registerDto)).rejects.toThrow(BadRequestException);
-      expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { email: 'existing@test.com', deletedAt: IsNull() } });
+      expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { email: 'existing@test.com', deleted_at: IsNull() } });
     });
   });
 
@@ -350,8 +350,8 @@ describe('AuthService', () => {
       const resetPasswordDto = { token: 'valid-token', newPassword: 'new-password' };
       const mockUser = {
         id: '1',
-        passwordResetToken: 'valid-token',
-        passwordResetExpires: new Date(Date.now() + 3600000)
+        password_reset_token: 'valid-token',
+        password_reset_expires: new Date(Date.now() + 3600000)
       } as User;
 
       mockJwtService.verify.mockReturnValue({ sub: '1' });
@@ -362,14 +362,14 @@ describe('AuthService', () => {
 
       expect(mockJwtService.verify).toHaveBeenCalledWith('valid-token');
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({
-        where: { id: '1', passwordResetToken: 'valid-token' }
+        where: { id: '1', password_reset_token: 'valid-token' }
       });
       expect(bcrypt.hash).toHaveBeenCalledWith('new-password', 10);
       expect(mockUserRepository.save).toHaveBeenCalledWith({
         ...mockUser,
         password: 'hashed-new-password',
-        passwordResetToken: null,
-        passwordResetExpires: null
+        password_reset_token: null,
+        password_reset_expires: null
       });
     });
 
@@ -377,8 +377,8 @@ describe('AuthService', () => {
       const resetPasswordDto = { token: 'valid-token', newPassword: 'plain-password' };
       const mockUser = {
         id: '1',
-        passwordResetToken: 'valid-token',
-        passwordResetExpires: new Date(Date.now() + 3600000)
+        password_reset_token: 'valid-token',
+        password_reset_expires: new Date(Date.now() + 3600000)
       } as User;
 
       mockJwtService.verify.mockReturnValue({ sub: '1' });
@@ -410,8 +410,8 @@ describe('AuthService', () => {
     it('should verify email with valid token', async () => {
       const mockUser = {
         id: '1',
-        emailVerificationToken: 'valid-token',
-        isEmailVerified: false
+        email_verification_token: 'valid-token',
+        is_email_verified: false
       } as User;
 
       mockJwtService.verify.mockReturnValue({ sub: '1' });
@@ -422,11 +422,11 @@ describe('AuthService', () => {
       expect(result.message).toBe('Email successfully verified');
       expect(mockJwtService.verify).toHaveBeenCalledWith('valid-token');
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({
-        where: { id: '1', emailVerificationToken: 'valid-token' }
+        where: { id: '1', email_verification_token: 'valid-token' }
       });
       expect(mockUserRepository.update).toHaveBeenCalledWith(mockUser.id, {        
-        isEmailVerified: true,
-        emailVerificationToken: null
+        is_email_verified: true,
+        email_verification_token: null
       });
     });
 

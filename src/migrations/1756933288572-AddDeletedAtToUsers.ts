@@ -6,14 +6,14 @@ export class AddDeletedAtToUsers1756933288572 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
             ALTER TABLE "users" 
-            ADD COLUMN "deletedAt" TIMESTAMP WITH TIME ZONE NULL
+            ADD COLUMN "deleted_at" TIMESTAMP WITH TIME ZONE NULL
         `);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
             ALTER TABLE "users" 
-            DROP COLUMN "deletedAt"
+            DROP COLUMN "deleted_at"
         `);
     }
 }
