@@ -72,7 +72,7 @@ export class UsersService {
 
   async findById(id: string): Promise<User> {
     try {
-      const user = await this.usersRepository.findOne({ where: { id, deletedAt: IsNull() } });
+      const user = await this.usersRepository.findOne({ where: { id, deleted_at: IsNull() } });
       
       if (!user) {
         throw new NotFoundException(`User with ID ${id} not found`);
@@ -108,10 +108,10 @@ async create(createUserDto: CreateUserDto): Promise<User> {
         email: email.toLowerCase().trim(), // ← Normalizar email
         password: hashedPassword,
         name: name?.trim(), // ← Trim si existe
-        isEmailVerified: false,
-        emailVerificationToken: null,
-        passwordResetToken: null,
-        passwordResetExpires: null
+        is_email_verified: false,
+        email_verification_token: null,
+        password_reset_token: null,
+        password_reset_expires: null
       });
 
       // 4. Guardar usuario en la base de datos
@@ -133,7 +133,7 @@ async create(createUserDto: CreateUserDto): Promise<User> {
 
   async findByEmail(email: string): Promise<User | null> {
     return this.usersRepository.findOne({
-      where: { email,  deletedAt: IsNull() }
+      where: { email,  deleted_at: IsNull() }
     });
   }
 
@@ -161,7 +161,7 @@ async create(createUserDto: CreateUserDto): Promise<User> {
   async remove(id: string): Promise<{ message: string }> {
     try {
       const user = await this.usersRepository.findOne({
-        where: { id, deletedAt: IsNull() } // Solo buscar usuarios no eliminados
+        where: { id, deleted_at: IsNull() } // Solo buscar usuarios no eliminados
       });
       
       if (!user) {
@@ -205,7 +205,7 @@ async create(createUserDto: CreateUserDto): Promise<User> {
       const roles = await this.roleRepository.find({
         where: { 
           id: In(roleIds), 
-          isActive: true 
+          is_active: true 
         }
       });
 

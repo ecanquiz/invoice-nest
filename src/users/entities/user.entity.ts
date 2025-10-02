@@ -55,7 +55,7 @@ export class User {
     default: false
   })
   @Column({ type: 'boolean', default: false })
-  isEmailVerified!: boolean;
+  is_email_verified!: boolean;
 
   @ApiProperty({
     description: 'Token used for email verification process',
@@ -64,7 +64,7 @@ export class User {
     nullable: true
   })
   @Column({ type: 'varchar', nullable: true, length: 255 })
-  emailVerificationToken: string | null;
+  email_verification_token: string | null;
 
   @ApiProperty({
     description: 'Token used for password reset process',
@@ -73,7 +73,7 @@ export class User {
     nullable: true
   })
   @Column({ type: 'varchar', nullable: true, length: 255 })
-  passwordResetToken?: string | null;
+  password_reset_token?: string | null;
 
   @ApiProperty({
     description: 'Expiration date and time for the password reset token',
@@ -83,7 +83,7 @@ export class User {
     format: 'date-time'
   })
   @Column({ nullable: true, type: 'timestamptz' })
-  passwordResetExpires?: Date | null;
+  password_reset_expires?: Date | null;
 
   @ApiProperty({
     description: 'URL or path to user profile avatar image',
@@ -101,7 +101,7 @@ export class User {
     readOnly: true
   })
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  created_at!: Date;
 
   @ApiProperty({
     description: 'Date and time when the user account was last updated',
@@ -110,10 +110,10 @@ export class User {
     readOnly: true
   })
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: Date;
+  updated_at!: Date;
 
   @DeleteDateColumn({ nullable: true })
-  deletedAt: Date | null;
+  deleted_at: Date | null;
 
   @ManyToMany(() => Role, { eager: true })
   @JoinTable({

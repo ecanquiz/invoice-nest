@@ -14,7 +14,7 @@ export class Role {
   description: string;
 
   @Column({ type: 'boolean', default: true })
-  isActive: boolean;
+  is_active: boolean;
 
   @ManyToMany(() => Permission, { eager: true })
   @JoinTable({
@@ -28,8 +28,8 @@ export class Role {
   users: User[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  created_at: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updated_at: Date;
 }
