@@ -22,6 +22,19 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "types": ["node", "vitest/globals"],
-    // "exclude": ["node_modules", "dist", "coverage"]
-  }
+    "paths": {
+      "@/*": ["src/*"],
+      "@core/*": ["src/core/*"],
+      "@features/*": ["src/features/*"],
+      "@/test/*": ["test/*"]
+    }
+  },  
+  "include": ["src/**/*"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage",
+    "test/**/*",
+    "src/**/__tests__/*"
+  ]
 }

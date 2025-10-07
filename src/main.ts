@@ -2,9 +2,9 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import * as morgan from 'morgan'
-import {CORS} from './constants'
+import {CORS} from './core/constants'
 import { AppModule } from './app.module';
-import { UserIdDto } from './users/dto/user-id.dto';
+import { UserIdDto } from './features/iam/users/dto/user-id.dto';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

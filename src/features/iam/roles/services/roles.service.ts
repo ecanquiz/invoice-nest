@@ -1,0 +1,176 @@
+import { Injectable, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, In } from 'typeorm';
+import { Permission } from '@features/iam/permissions/entities/permission.entity';
+import { Role } from '../entities/role.entity';
+import { CreateRoleDto } from '../dto/create-role.dto';
+import { UpdateRoleDto } from '../dto/update-role.dto';
+
+@Injectable()
+export class RolesService {
+  constructor(
+    @InjectRepository(Role)
+    private readonly roleRepository: Repository<Role>,
+    @InjectRepository(Permission)
+    private readonly permissionRepository: Repository<Permission>,
+  ) {}
+
+  async findAll(): Promise<Role[]> {
+    return this.roleRepository.find({
+      relations: ['permissions'],
+      where: { is_active: true },
+      order: { name: 'ASC' }
+    });
+  }
+
+  async findOne(id: string): Promise<Role> {
+    const role = await this.roleRepository.findOne({
+      where: { id, is_active: true },
+      relations: ['permissions']
+    });
+
+    if (!role) {
+      throw new NotFoundException(`Role with ID ${id} not found`);
+    }
+
+    return role;
+  }
+
+  async findByName(name: string): Promise<Role> {
+    const role = await this.roleRepository.findOne({
+      where: { name, is_active: true },
+      relations: ['permissions']
+    });
+
+    if (!role) {
+      throw new NotFoundException(`Role with name '${name}' not found`);
+    }
+
+    return role;
+  }
+  
+  async create(createRoleDto: CreateRoleDto): Promise<Role> {
+    try {
+      // Check if the role already exists
+      const existingRole = await this.roleRepository.findOne({
+        where: { name: createRoleDto.name }
+      });
+
+      if (existingRole) {
+        throw new ConflictException(`Role with name '${createRoleDto.name}' already exists`);
+      }
+
+      // Obtain permissions if specified
+      let permissions: Permission[] = [];
+      if (createRoleDto.permissionIds && createRoleDto.permissionIds.length > 0) {
+        permissions = await this.permissionRepository.find({
+          where: { id: In(createRoleDto.permissionIds) }
+        });
+      }
+
+      // Create the role
+      const role = this.roleRepository.create({
+        ...createRoleDto,
+        permissions
+      });
+
+      return await this.roleRepository.save(role);
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Could not create role');
+    }
+  }
+
+  async update(id: string, updateRoleDto: UpdateRoleDto): Promise<Role> {
+    try {
+      const role = await this.findOne(id);
+
+      // Check if the new name already exists (if it is being changed)
+      if (updateRoleDto.name && updateRoleDto.name !== role.name) {
+        const existingRole = await this.roleRepository.findOne({
+          where: { name: updateRoleDto.name }
+        });
+
+        if (existingRole) {
+          throw new ConflictException(`Role with name '${updateRoleDto.name}' already exists`);
+        }
+      }
+
+      // Update permissions if specified
+      if (updateRoleDto.permissionIds) {
+        const permissions = await this.permissionRepository.find({
+          where: { id: In(updateRoleDto.permissionIds) }
+        });
+        role.permissions = permissions;
+      }
+
+      // Update other fields
+      Object.assign(role, updateRoleDto);
+
+      return await this.roleRepository.save(role);
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof ConflictException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Could not update role');
+    }
+  }
+
+  async remove(id: string): Promise<void> {
+    try {
+      const role = await this.findOne(id);
+      
+      // Soft delete: marcar como inactivo en lugar de eliminar
+      role.is_active = false;
+      
+      await this.roleRepository.save(role);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Could not delete role');
+    }
+  }
+
+  async addPermissionsToRole(roleId: string, permissionIds: string[]): Promise<Role> {
+    try {
+      const role = await this.findOne(roleId);
+      const permissions = await this.permissionRepository.find({
+        where: { id: In(permissionIds) }
+      });
+
+      // Agregar nuevos permisos (evitando duplicados)
+      const existingPermissionIds = role.permissions.map(p => p.id);
+      const newPermissions = permissions.filter(p => !existingPermissionIds.includes(p.id));
+      
+      role.permissions = [...role.permissions, ...newPermissions];
+
+      return await this.roleRepository.save(role);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Could not add permissions to role');
+    }
+  }
+
+  async removePermissionsFromRole(roleId: string, permissionIds: string[]): Promise<Role> {
+    try {
+      const role = await this.findOne(roleId);
+      
+      // Filtrar los permisos a remover
+      role.permissions = role.permissions.filter(
+        permission => !permissionIds.includes(permission.id)
+      );
+
+      return await this.roleRepository.save(role);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Could not remove permissions from role');
+    }
+  }
+}
