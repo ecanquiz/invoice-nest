@@ -4,7 +4,6 @@ import { config } from 'dotenv';
 
 config();
 const configService = new ConfigService();
-
 export default new DataSource({
   type: 'postgres',
   host: configService.get('DB_HOST'),

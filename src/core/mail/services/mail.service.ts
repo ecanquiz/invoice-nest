@@ -13,6 +13,7 @@ export class MailService {
     private readonly logger: LoggerService
   ) {
     this.initializeTransporter();
+
   }
 
   private initializeTransporter() {
