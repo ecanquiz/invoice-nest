@@ -4,6 +4,7 @@ import { User } from '@features/iam/users/entities/user.entity';
 @Injectable()
 export class AuthorizationService {
   hasRole(user: User, roleName: string): boolean {
+    console.info('Info role ', {user, roleName})
     return user.roles.some(role => role.name === roleName);
   }
 
