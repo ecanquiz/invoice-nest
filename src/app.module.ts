@@ -1,22 +1,19 @@
 import { Module, forwardRef, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
-import { DatabaseModule } from './database/database.module';
-import { DatabaseSeedsModule } from './database/database-seeds.module';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard'
-import { RolesGuard } from './auth/guards/roles.guard';
-import { PermissionsGuard } from './auth/guards/permissions.guard';
-import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
-import { MailModule } from './mail/mail.module';
-import { RolesModule } from './roles/roles.module';
-import { PermissionsModule } from './permissions/permissions.module';
-import { EncryptionService } from './encryption/encryption.service';
-import { EncryptionMiddleware } from './encryption/encryption.middleware';
-import { TasksModule } from './tasks/tasks.module';
-import { TasksController } from './tasks/tasks.controller';
+import { DatabaseModule } from './core/database/database.module';
+import { DatabaseSeedsModule } from './core/database/database-seeds.module';
+import { EncryptionService } from './core/encryption/encryption.service';
+import { EncryptionMiddleware } from './core/encryption/encryption.middleware';
+import { MailModule } from './core/mail/mail.module';
+import { JwtAuthGuard } from './features/auth/guards/jwt-auth.guard'
+import { RolesGuard } from './features/auth/guards/roles.guard';
+import { PermissionsGuard } from './features/auth/guards/permissions.guard';
+import { AuthModule } from './features/auth/auth.module';
+import { IamModule } from './features/iam/iam.module'; /* Identity & Access Management */
+import { CustomersModule } from './features/customers/customers.module';
+import { TasksModule } from './features/tasks/tasks.module';
+// import { TasksController } from './tasks/tasks.controller';
 
 @Module({
   imports: [
@@ -31,16 +28,13 @@ import { TasksController } from './tasks/tasks.controller';
     DatabaseSeedsModule,
     TasksModule,
     forwardRef(() => AuthModule),
-    forwardRef(() => UsersModule),
-    forwardRef(() => RolesModule),
-    forwardRef(() => PermissionsModule),
+    forwardRef(() => IamModule), /* Identity & Access Management */
+    forwardRef(() => CustomersModule),
     //forwardRef(() => TasksModule),
     MailModule,    
   ],
-  controllers: [AppController],
   providers: [
     EncryptionService,
-    AppService,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_GUARD, useClass: PermissionsGuard },
@@ -51,6 +45,6 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(EncryptionMiddleware)
-      .forRoutes('*'); // Aplicar a todas las rutas
+      .forRoutes('*'); // Apply to all routes
   }
 }

@@ -22,12 +22,12 @@
     "test:e2e": "vitest run -c vitest.e2e.config.ts",
     "test:debug": "vitest --inspect-brk",
     "typeorm": "ts-node ./node_modules/typeorm/cli",
-    "migration:generate": "npm run typeorm -- migration:generate ./src/migrations/$npm_config_name -d ./src/database/data-source.ts",
-    "migration:run": "npm run typeorm -- migration:run -d ./src/database/data-source.ts",
-    "migration:revert": "npm run typeorm -- migration:revert -d ./src/database/data-source.ts",
-    "migration:create": "npm run typeorm migration:create ./src/migrations/$npm_config_name",
-    "schema:sync": "npm run typeorm schema:sync -d ./src/database/data-source.ts",
-    "create:admin": "ts-node src/scripts/create-admin.script.ts"
+    "migration:generate": "npm run typeorm -- migration:generate ./src/core/database/migrations/$npm_config_name -d ./src/core/database/data-source.ts",
+    "migration:run": "npm run typeorm -- migration:run -d ./src/core/database/data-source.ts",
+    "migration:revert": "npm run typeorm -- migration:revert -d ./src/core/database/data-source.ts",
+    "migration:create": "npm run typeorm migration:create ./src/core/database/migrations/$npm_config_name",
+    "schema:sync": "npm run typeorm schema:sync -d ./src/core/database/data-source.ts",
+    "create:admin": "ts-node --project tsconfig.scripts.json src/core/scripts/create-admin.script.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

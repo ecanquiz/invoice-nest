@@ -35,4 +35,11 @@ export default defineConfig({
     }
   },
   plugins: [tsconfigPaths()],
+    resolve: {
+    alias: [
+      { find: '@', replacement: '/src' },
+      { find: '@core', replacement: '/src/core' },
+      { find: '@features', replacement: '/src/features' }
+    ]
+  }
 });

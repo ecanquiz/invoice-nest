@@ -1,0 +1,11 @@
+import { User } from '@features/users/entities/user.entity';
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: User;
+    }
+  }
+}
+
+export type AuthenticatedRequest = Request & { user: User };
