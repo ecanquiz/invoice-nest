@@ -38,4 +38,6 @@ export class CreateUserDto {
   @MinLength(2)
   @MaxLength(50)
   name: string;
+
+  role: string //cambiar a array de string en un futuro si se soporta mas de un rol
 }

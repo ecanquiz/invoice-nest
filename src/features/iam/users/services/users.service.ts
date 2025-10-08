@@ -37,6 +37,10 @@ export class UsersService {
     const queryBuilder = this.usersRepository.createQueryBuilder('user');
 
     queryBuilder.andWhere('user.deleted_at IS NULL');
+    // join con roles
+    queryBuilder
+    .leftJoinAndSelect('user.roles', 'role');
+
 
     // Apply filters
     if (email) {
@@ -91,7 +95,7 @@ export class UsersService {
   }
 
 async create(createUserDto: CreateUserDto): Promise<User> {
-    const { email, password, name } = createUserDto;
+    const { email, password, name, role } = createUserDto;
 
     try {
       // 1. Verificar si el email ya existe
@@ -99,7 +103,13 @@ async create(createUserDto: CreateUserDto): Promise<User> {
       if (existingUser) {
         throw new ConflictException('Email already registered');
       }
+       const roleEntity = await this.roleRepository.findOne({
+      where: { name: role, is_active: true },
+    });
 
+    if (!roleEntity) {
+      throw new NotFoundException(`Role ${role} not found or inactive`);
+    }
       // 2. Hashear password
       const hashedPassword = await bcrypt.hash(password, 12); // ↑ cost factor a 12
 
@@ -111,7 +121,8 @@ async create(createUserDto: CreateUserDto): Promise<User> {
         is_email_verified: false,
         email_verification_token: null,
         password_reset_token: null,
-        password_reset_expires: null
+        password_reset_expires: null,
+        roles: [roleEntity], // <<<<<< Aquí la magia
       });
 
       // 4. Guardar usuario en la base de datos
