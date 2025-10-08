@@ -1,4 +1,4 @@
-import 'reflect-metadata'; 
+import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import * as morgan from 'morgan'
@@ -8,7 +8,7 @@ import { UserIdDto } from './features/iam/users/dto/user-id.dto';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.use(morgan.default('dev'))
+  app.use(morgan.default('dev'));
 
   // Swagger Configuration
   const config = new DocumentBuilder()
@@ -37,7 +37,6 @@ async function bootstrap() {
   app.enableCors(CORS);
 
   // app.setGlobalPrefix('api/v1');
-
   await app.listen(process.env.PORT ?? 3000);
   console.log(`🚀 Application is running on: ${await app.getUrl()}`);
   console.log('🔐 [MAIN] Environment variables:');
@@ -48,4 +47,4 @@ async function bootstrap() {
   console.log('🔐 [MAIN] ENC_KEY length:', process.env.ENC_KEY?.length);
 
 }
-bootstrap();
+void bootstrap();

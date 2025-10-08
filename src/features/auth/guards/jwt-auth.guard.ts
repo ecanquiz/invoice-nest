@@ -27,8 +27,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
     
-    
-    if (token && this.tokenBlacklistService.contains(token)) {
+     if (token && this.tokenBlacklistService.contains(token)) {
       throw new UnauthorizedException('Token has been invalidated (logout)');
     }
 
