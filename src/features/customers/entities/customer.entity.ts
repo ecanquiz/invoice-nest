@@ -25,8 +25,8 @@ export class Customer {
   @OneToMany(() => CustomerWinePreference, pref => pref.customer)
   winePreferences: CustomerWinePreference[];
 
-  // Aquí puedes agregar campos específicos de Customer si necesitas
-  @Column({ type: 'varchar', length: 20, nullable: true })
+  // Here you can add Customer specific fields if you need to
+  @Column({ type: 'varchar', length: 30, nullable: true })
   customer_code: string;
 
   @CreateDateColumn()

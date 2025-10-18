@@ -51,6 +51,8 @@ export class UsersService {
       queryBuilder.andWhere('user.isEmailVerified = :isEmailVerified', { isEmailVerified });
     }
 
+    queryBuilder.leftJoinAndSelect('user.roles', 'role');
+
     // Get results and total
     const [users, total] = await queryBuilder
       .orderBy('user.created_at', 'DESC')
@@ -114,19 +116,19 @@ async create(createUserDto: CreateUserDto): Promise<User> {
         password_reset_expires: null
       });
 
-      // 4. Guardar usuario en la base de datos
+      // 4. Save user to database
       const savedUser = await this.usersRepository.save(user);
 
-      // 5. Retornar usuario (excluyendo password por seguridad)
+      // 5. Return user (excluding password for security)
       const { password: _, ...userWithoutPassword } = savedUser;
       return userWithoutPassword as User;
 
     } catch (error) {
       if (error instanceof ConflictException) {
-        throw error; // ← Propagar ConflictException tal cual
+        throw error; // ← Propagate ConflictException as is
       }
 
-      // Manejar otros errores (base de datos, etc.)
+      // Handling other errors (database, etc.)
       throw new InternalServerErrorException('Could not create user');
     }
   }
@@ -161,14 +163,14 @@ async create(createUserDto: CreateUserDto): Promise<User> {
   async remove(id: string): Promise<{ message: string }> {
     try {
       const user = await this.usersRepository.findOne({
-        where: { id, deleted_at: IsNull() } // Solo buscar usuarios no eliminados
+        where: { id, deleted_at: IsNull() } // Only search for non-deleted users
       });
       
       if (!user) {
         throw new NotFoundException(`User with ID ${id} not found`);
       }
 
-      // Soft delete: actualizar deleted_at en lugar de eliminar físicamente
+      // Soft delete: update deleted_at instead of physically deleting
       await this.usersRepository.softDelete(id);
       
       return { message: 'User deleted successfully' };

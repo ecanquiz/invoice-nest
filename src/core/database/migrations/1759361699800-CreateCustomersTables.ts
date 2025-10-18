@@ -9,7 +9,7 @@ export class CreateCustomersTables1759361699800 implements MigrationInterface {
       CREATE TABLE "customers" (
         "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
         "user_id" UUID UNIQUE NOT NULL,
-        "customer_code" VARCHAR(20),
+        "customer_code" VARCHAR(30),
         "created_at" TIMESTAMP DEFAULT NOW(),
         FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE
       )

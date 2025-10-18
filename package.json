@@ -27,7 +27,9 @@
     "migration:revert": "npm run typeorm -- migration:revert -d ./src/core/database/data-source.ts",
     "migration:create": "npm run typeorm migration:create ./src/core/database/migrations/$npm_config_name",
     "schema:sync": "npm run typeorm schema:sync -d ./src/core/database/data-source.ts",
-    "create:admin": "ts-node --project tsconfig.scripts.json src/core/scripts/create-admin.script.ts"
+    "db:seed": "ts-node -r tsconfig-paths/register src/core/scripts/db-seed.script.ts",
+    "db:seed:dev": "npm run db:seed -- development",
+    "db:seed:test": "npm run db:seed -- testing"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -52,10 +54,12 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
+    "@faker-js/faker": "^10.1.0",
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
     "@types/express": "^5.0.0",
+    "@types/faker": "^6.6.8",
     "@types/morgan": "^1.9.10",
     "@types/node": "^22.10.7",
     "@types/nodemailer": "^7.0.1",
