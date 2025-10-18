@@ -125,7 +125,7 @@ describe('UsersService', () => {
       const result = await service.findAll(filters);
 
       expect(mockRepository.createQueryBuilder).toHaveBeenCalled();
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('user.deletedAt IS NULL');
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('user.deleted_at IS NULL');
       expect(result).toEqual({
         users: mockUsers,
         total,
@@ -134,7 +134,7 @@ describe('UsersService', () => {
         totalPages: 1
       });
       // Verificaciones adicionales
-      expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith('user.createdAt', 'DESC');
+      expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith('user.created_at', 'DESC');
       expect(mockQueryBuilder.skip).toHaveBeenCalledWith(0);
       expect(mockQueryBuilder.take).toHaveBeenCalledWith(10);
       expect(result.users[0].deleted_at).toBeNull();
@@ -303,8 +303,8 @@ describe('UsersService', () => {
       email: 'newuser@example.com',
       name: 'New User',
       isEmailVerified: false,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      created_at: new Date(),
+      updated_at: new Date()
     };
 
     beforeEach(() => {

@@ -27,7 +27,6 @@ export class UsersController {
   @Roles('admin') // Only admin
   @Permissions('users.read') // With reading permission
   async findAll(@Query() filters: UserFilterDto) {
-    console.log('Filters:', filters);
     return this.usersService.findAll(filters);
   }
 

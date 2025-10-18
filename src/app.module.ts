@@ -12,7 +12,8 @@ import { PermissionsGuard } from './features/auth/guards/permissions.guard';
 import { AuthModule } from './features/auth/auth.module';
 import { IamModule } from './features/iam/iam.module'; /* Identity & Access Management */
 import { CustomersModule } from './features/customers/customers.module';
-import { TasksModule } from './features/tasks/tasks.module';
+import { CategoriesModule } from './features/categories/categories.module';
+// import { TasksModule } from './features/tasks/tasks.module';
 // import { TasksController } from './tasks/tasks.controller';
 
 @Module({
@@ -26,11 +27,11 @@ import { TasksModule } from './features/tasks/tasks.module';
     }),
     DatabaseModule,
     DatabaseSeedsModule,
-    TasksModule,
+    CategoriesModule,
+//    TasksModule,
     forwardRef(() => AuthModule),
     forwardRef(() => IamModule), /* Identity & Access Management */
     forwardRef(() => CustomersModule),
-    //forwardRef(() => TasksModule),
     MailModule,    
   ],
   providers: [

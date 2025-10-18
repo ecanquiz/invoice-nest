@@ -33,7 +33,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Customer registration' })
   @ApiResponse({ status: 201, description: 'Customer successfully registered' })
   @ApiResponse({ status: 400, description: 'Email already in use or invalid data' })
-  @Post('register/customer')
+  @Post('register-customer')
   @Public()
   async registerCustomer(@Body() registerCustomerDto: RegisterCustomerDto) {
     console.log('🔐 [Nest] Customer register endpoint called with:', registerCustomerDto);

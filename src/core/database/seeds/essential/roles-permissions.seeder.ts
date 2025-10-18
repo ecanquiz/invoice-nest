@@ -1,27 +1,30 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { BaseSeeder } from '../base-seeder.abstract';
 import { Role } from '@features/iam/roles/entities/role.entity';
 import { Permission } from '@features/iam/permissions/entities/permission.entity';
 
 @Injectable()
-export class RolesPermissionsSeed implements OnModuleInit {
+export class RolesPermissionsSeeder extends BaseSeeder {
+  name = 'RolesPermissionsSeeder';
+
   constructor(
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
     @InjectRepository(Permission)
     private readonly permissionRepository: Repository<Permission>,
-  ) {}
-
-  async onModuleInit() {
-    await this.seed();
+  ) {
+    super();
   }
 
-  async seed() {
-    // Create basic permissions
+  async shouldRun(): Promise<boolean> {
+    const roleCount = await this.roleRepository.count();
+    return roleCount === 0; // Only run if there are no roles
+  }
+
+  async run(): Promise<void> {
     const permissions = await this.createPermissions();
-    
-    // Create basic roles
     await this.createRoles(permissions);
   }
 
@@ -42,7 +45,7 @@ export class RolesPermissionsSeed implements OnModuleInit {
       { name: 'roles.update', description: 'Update roles', module: 'roles', action: 'update' },
       { name: 'roles.delete', description: 'Delete roles', module: 'roles', action: 'delete' },
       
-      // Products module (para merchants)
+      // Products module
       { name: 'products.read', description: 'Read products', module: 'products', action: 'read' },
       { name: 'products.create', description: 'Create products', module: 'products', action: 'create' },
       { name: 'products.update', description: 'Update products', module: 'products', action: 'update' },
@@ -78,39 +81,23 @@ export class RolesPermissionsSeed implements OnModuleInit {
   }
 
   private async createRoles(permissions: Permission[]) {
-    // 1. Rol ADMIN - Todos los permisos
+    // 1. ADMIN role - All permits
     await this.createOrUpdateRole(
       'admin',
       'Administrator with full access to all system features',
-      permissions // Todos los permisos
+      permissions // All permits
     );
 
-    // 2. Rol MERCHANT - Permisos para gestionar productos y órdenes
-    const merchantPermissions = permissions.filter(p => 
-      p.module === 'auth' || 
-      p.module === 'products' || 
-      p.module === 'orders' ||
-      p.module === 'categories' ||
-      p.name === 'users.read' || 
-      p.name === 'users.update' // Puede actualizar su propio perfil
-    );
-    
-    await this.createOrUpdateRole(
-      'merchant',
-      'Business user who can manage products, orders, and categories',
-      merchantPermissions
-    );
-
-    // 3. Rol CUSTOMER - Permisos básicos para comprar
+    // 2. CUSTOMER role - Basic purchasing permits
     const customerPermissions = permissions.filter(p => 
       p.module === 'auth' ||
       p.name === 'products.read' ||
       p.name === 'orders.read' ||
       p.name === 'orders.create' ||
-      p.name === 'orders.update' || // Para actualizar sus propias órdenes
+      p.name === 'orders.update' || // To update your own orders
       p.name === 'categories.read' ||
       p.name === 'users.read' ||
-      p.name === 'users.update' // Para actualizar su propio perfil
+      p.name === 'users.update' // To update your own profile
     );
     
     await this.createOrUpdateRole(
@@ -131,7 +118,7 @@ export class RolesPermissionsSeed implements OnModuleInit {
     });
     
     if (!role) {
-      // Crear nuevo rol
+      // Create a new role
       role = this.roleRepository.create({
         name: roleName,
         description,
@@ -140,7 +127,7 @@ export class RolesPermissionsSeed implements OnModuleInit {
       role = await this.roleRepository.save(role);
       console.log(`✅ ${roleName} role created with ${permissions.length} permissions`);
     } else {
-      // Actualizar rol existente
+      // Update existing role
       role.description = description;
       role.permissions = permissions;
       role = await this.roleRepository.save(role);
