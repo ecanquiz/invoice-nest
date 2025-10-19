@@ -4,6 +4,7 @@ import { CategoriesSeeder } from './essential/categories.seeder';
 import { AdminUserSeeder } from './essential/admin-user.seeder';
 import { FakeUsersSeeder } from './development/fake-users.seeder';
 import { BaseSeeder } from './base-seeder.abstract';
+import { FakeProductsSeeder } from './development/fake-products.seeder';
 
 export type SeedMode = 'essential' | 'development' | 'testing';
 
@@ -15,7 +16,8 @@ export class DatabaseSeeder {
     private rolesPermissionsSeeder: RolesPermissionsSeeder,
     private categoriesSeeder: CategoriesSeeder,
     private adminUserSeeder: AdminUserSeeder,
-        private fakeUsersSeeder: FakeUsersSeeder,
+    private fakeUsersSeeder: FakeUsersSeeder,
+    private fakeProductsSeeder: FakeProductsSeeder
   ) {}
 
   async run(mode: SeedMode = 'essential') {
@@ -30,6 +32,7 @@ export class DatabaseSeeder {
 
     const developmentSeeders: BaseSeeder[] = [
       this.fakeUsersSeeder,
+      // this.fakeProductsSeeder
     ];
 
     let seedersToRun: BaseSeeder[] = [];

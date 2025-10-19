@@ -16,6 +16,7 @@ import { LoggerService } from '@core/common';
 import { Public } from '../decorators/public.decorator';
 import { AuthService } from '../services/auth.service';
 import { RegisterCustomerDto } from '../dto/register-customer.dto';
+import { RegisterMerchantDto } from '../dto/register-merchant.dto';
 import { LoginDto } from '../dto/login.dto';
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
