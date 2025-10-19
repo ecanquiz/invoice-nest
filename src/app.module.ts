@@ -13,6 +13,9 @@ import { AuthModule } from './features/auth/auth.module';
 import { IamModule } from './features/iam/iam.module'; /* Identity & Access Management */
 import { CustomersModule } from './features/customers/customers.module';
 import { CategoriesModule } from './features/categories/categories.module';
+import { ProductsModule } from './features/products/products.module';
+import { InventoryModule } from './features/inventory/inventory.module';
+
 // import { TasksModule } from './features/tasks/tasks.module';
 // import { TasksController } from './tasks/tasks.controller';
 
@@ -28,6 +31,8 @@ import { CategoriesModule } from './features/categories/categories.module';
     DatabaseModule,
     DatabaseSeedsModule,
     CategoriesModule,
+    ProductsModule,
+    InventoryModule,
 //    TasksModule,
     forwardRef(() => AuthModule),
     forwardRef(() => IamModule), /* Identity & Access Management */

@@ -44,7 +44,7 @@ export class FakeUsersSeeder extends BaseSeeder {
     this.log('Starting fake users generation...');
 
     const [customerRole] = await Promise.all([
-      this.roleRepository.findOne({ where: { name: 'customer' }}),
+      this.roleRepository.findOne({ where: { name: 'customer' }})
     ]);
 
     if (!customerRole) {

@@ -45,7 +45,7 @@ export class RolesPermissionsSeeder extends BaseSeeder {
       { name: 'roles.update', description: 'Update roles', module: 'roles', action: 'update' },
       { name: 'roles.delete', description: 'Delete roles', module: 'roles', action: 'delete' },
       
-      // Products module
+      // Products module (para merchants)
       { name: 'products.read', description: 'Read products', module: 'products', action: 'read' },
       { name: 'products.create', description: 'Create products', module: 'products', action: 'create' },
       { name: 'products.update', description: 'Update products', module: 'products', action: 'update' },
@@ -88,7 +88,23 @@ export class RolesPermissionsSeeder extends BaseSeeder {
       permissions // All permits
     );
 
-    // 2. CUSTOMER role - Basic purchasing permits
+    // 2. MERCHANT role - Permissions to manage products and orders
+    const merchantPermissions = permissions.filter(p => 
+      p.module === 'auth' || 
+      p.module === 'products' || 
+      p.module === 'orders' ||
+      p.module === 'categories' ||
+      p.name === 'users.read' || 
+      p.name === 'users.update' // You can update your own profile
+    );
+    
+    await this.createOrUpdateRole(
+      'merchant',
+      'Business user who can manage products, orders, and categories',
+      merchantPermissions
+    );
+
+    // 3. CUSTOMER role - Basic purchasing permits
     const customerPermissions = permissions.filter(p => 
       p.module === 'auth' ||
       p.name === 'products.read' ||

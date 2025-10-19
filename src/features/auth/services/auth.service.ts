@@ -19,6 +19,7 @@ import { UsersService } from '@features/iam/users/services/users.service';
 import { CustomerRegistrationService } from '@features/customers/services/customer-registration.service';
 import { LoginDto } from '../dto/login.dto';
 import { RegisterCustomerDto } from '../dto/register-customer.dto';
+import { RegisterMerchantDto } from '../dto/register-merchant.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { ChangePasswordDto } from '../dto/change-password.dto';
