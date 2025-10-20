@@ -7,12 +7,11 @@ import { InventoryController } from './controllers/inventory.controller';
 import { ProductsModule } from '@/features/products/products.module';
 import { AuthModule } from '@/features/auth/auth.module';
 
-
 @Module({
   imports: [
     TypeOrmModule.forFeature([Inventory, StockMovement]),
     forwardRef(() => ProductsModule), // To use ProductsService
-    AuthModule,
+    AuthModule
   ],
   controllers: [InventoryController],
   providers: [InventoryService],
