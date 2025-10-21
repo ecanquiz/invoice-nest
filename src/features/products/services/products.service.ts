@@ -18,7 +18,7 @@ export class ProductsService {
     private dataSource: DataSource,
   ) {}
 
-  async create(createProductDto: CreateProductDto): Promise<Product> {
+  async create(userId: string, createProductDto: CreateProductDto): Promise<Product> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -40,6 +40,7 @@ export class ProductsService {
 
       await this.inventoryService.createInventoryForProduct(
         savedProduct.id, 
+        userId,
         queryRunner
       );
 
