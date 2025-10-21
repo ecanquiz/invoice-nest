@@ -37,7 +37,7 @@ export class ProductsController {
     @CurrentUser() user: User,
     @Body() createProductDto: CreateProductDto,
   ): Promise<Product> {
-    return this.productsService.create(createProductDto);
+    return this.productsService.create(user.id, createProductDto);
   }
 
   @Get()
