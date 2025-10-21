@@ -24,10 +24,12 @@ export class InventoryService {
    */
   async createInventoryForProduct(
     productId: string, 
-    updatedBy: string, 
     queryRunner?: QueryRunner
   ): Promise<Inventory> {
     const repository = queryRunner ? queryRunner.manager.getRepository(Inventory) : this.inventoryRepository;
+
+
+
     
     const inventory = repository.create({
       product_id: productId,
@@ -35,7 +37,8 @@ export class InventoryService {
       reserved_stock: 0,
       minimum_stock: 10,
       maximum_stock: 1000,
-      updated_by: updatedBy,
+      updated_by: 'updated_by'
+
     });
 
     return await repository.save(inventory);

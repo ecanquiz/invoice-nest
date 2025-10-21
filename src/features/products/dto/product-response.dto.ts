@@ -5,9 +5,6 @@ export class ProductResponseDto {
   id: string;
 
   @ApiProperty()
-  merchant_id: string;
-
-  @ApiProperty()
   name: string;
 
   @ApiProperty({ required: false })
@@ -57,10 +54,6 @@ export class ProductResponseDto {
 
   @ApiProperty()
   updated_at: Date;
-
-  // Relations (optional)
-  @ApiProperty({ required: false })
-  merchant?: any;
 
   @ApiProperty({ required: false })
   category?: any;

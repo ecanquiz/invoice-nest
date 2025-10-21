@@ -32,7 +32,7 @@ export class DatabaseSeeder {
 
     const developmentSeeders: BaseSeeder[] = [
       this.fakeUsersSeeder,
-      // this.fakeProductsSeeder
+      this.fakeProductsSeeder
     ];
 
     let seedersToRun: BaseSeeder[] = [];

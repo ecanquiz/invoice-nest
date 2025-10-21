@@ -18,7 +18,7 @@ export class ProductsService {
     private dataSource: DataSource,
   ) {}
 
-  /* create(merchantId: string, createProductDto: CreateProductDto): Promise<Product> {
+  async create(createProductDto: CreateProductDto): Promise<Product> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -34,14 +34,12 @@ export class ProductsService {
       }
 
       const product = this.productsRepository.create({
-        ...createProductDto,
-        merchant_id: merchantId,
+        ...createProductDto
       });
       const savedProduct = await queryRunner.manager.save(Product, product);
 
       await this.inventoryService.createInventoryForProduct(
         savedProduct.id, 
-        merchantId, 
         queryRunner
       );
 
@@ -56,12 +54,8 @@ export class ProductsService {
     }
   }
 
-  async findAll(merchantId?: string, categoryId?: string, isActive: boolean = true): Promise<Product[]> {
+  async findAll(categoryId?: string, isActive: boolean = true): Promise<Product[]> {
     const where: any = { is_active: isActive };
-
-    if (merchantId) {
-      where.merchant_id = merchantId;
-    }
 
     if (categoryId) {
       where.category_id = categoryId;
@@ -69,21 +63,17 @@ export class ProductsService {
 
     return await this.productsRepository.find({
       where,
-      relations: ['merchant', 'category'],
+      relations: ['category'],
       order: { created_at: 'DESC' },
     });
   }
 
-  async findOne(id: string, merchantId?: string): Promise<Product> {
+  async findOne(id: string): Promise<Product> {
     const where: any = { id };
-
-    if (merchantId) {
-      where.merchant_id = merchantId;
-    }
 
     const product = await this.productsRepository.findOne({
       where,
-      relations: ['merchant', 'category'],
+      relations: ['category'],
     });
 
     if (!product) {
@@ -95,10 +85,9 @@ export class ProductsService {
 
   async update(
     id: string, 
-    merchantId: string, 
     updateProductDto: UpdateProductDto
   ): Promise<Product> {
-    const product = await this.findOne(id, merchantId);
+    const product = await this.findOne(id);
 
     // If the category is being updated, check that it exists
     if (updateProductDto.category_id) {
@@ -115,39 +104,26 @@ export class ProductsService {
     return await this.productsRepository.save(updatedProduct);
   }
 
-  async remove(id: string, merchantId: string): Promise<void> {
-    const product = await this.findOne(id, merchantId);
+  async remove(id: string): Promise<void> {
+    const product = await this.findOne(id);
     
     // Soft delete
     await this.productsRepository.softDelete(id);
   }
 
-  async toggleStatus(id: string, merchantId: string, isActive: boolean): Promise<Product> {
-    const product = await this.findOne(id, merchantId);
+  async toggleStatus(id: string, isActive: boolean): Promise<Product> {
+    const product = await this.findOne(id);
     
     product.is_active = isActive;
     return await this.productsRepository.save(product);
   }
 
-  async findByMerchant(merchantId: string, isActive: boolean = true): Promise<Product[]> {
-    return await this.productsRepository.find({
-      where: {
-        merchant_id: merchantId,
-        is_active: isActive,
-      },
-      relations: ['category'],
-      order: { created_at: 'DESC' },
-    });
-  }
-
   async searchProducts(
     query: string, 
-    categoryIds?: string[], 
-    merchantId?: string
+    categoryIds?: string[]
   ): Promise<Product[]> {
     const qb = this.productsRepository
       .createQueryBuilder('product')
-      .leftJoinAndSelect('product.merchant', 'merchant')
       .leftJoinAndSelect('product.category', 'category')
       .where('product.is_active = :isActive', { isActive: true });
 
@@ -162,30 +138,21 @@ export class ProductsService {
       qb.andWhere('product.category_id IN (:...categoryIds)', { categoryIds });
     }
 
-    if (merchantId) {
-      qb.andWhere('product.merchant_id = :merchantId', { merchantId });
-    }
-
     return await qb.orderBy('product.created_at', 'DESC').getMany();
   }
 
-  async getProductsCount(merchantId?: string): Promise<number> {
+  async getProductsCount(): Promise<number> {
     const where: any = { is_active: true };
-    
-    if (merchantId) {
-      where.merchant_id = merchantId;
-    }
 
     return await this.productsRepository.count({ where });
   }
 
-  async bulkUpdateStatus(ids: string[], merchantId: string, isActive: boolean): Promise<void> {
+  async bulkUpdateStatus(ids: string[], isActive: boolean): Promise<void> {
     await this.productsRepository
       .createQueryBuilder()
       .update(Product)
       .set({ is_active: isActive })
       .where('id IN (:...ids)', { ids })
-      .andWhere('merchant_id = :merchantId', { merchantId })
       .execute();
-  }*/
+  }
 }
