@@ -5,8 +5,6 @@ import { RolesPermissionsSeeder } from './seeds/essential/roles-permissions.seed
 import { CategoriesSeeder } from './seeds/essential/categories.seeder';
 import { AdminUserSeeder } from './seeds/essential/admin-user.seeder';
 import { Role } from '@features/iam/roles/entities/role.entity';
-import { FakeUsersSeeder } from './seeds/development/fake-users.seeder';
-import { FakeProductsSeeder } from './seeds/development/fake-products.seeder';
 import { Permission } from '@features/iam/permissions/entities/permission.entity';
 import { Category } from '@features/categories/entities/category.entity';
 import { User } from '@features/iam/users/entities/user.entity';
@@ -15,6 +13,9 @@ import { CustomerProfile } from '@features/customers/profiles/entities/customer-
 import { CustomerCommunicationPreference } from '@features/customers/preferences/communications/entities/customer-communication-preference.entity';
 import { CustomerWinePreference } from '@features/customers/preferences/wines/entities/customer-wine-preference.entity';
 import { Product } from '@features/products/entities/product.entity';
+import { Inventory } from '@features/inventory/entities/inventory.entity';
+import { FakeUsersSeeder } from './seeds/development/fake-users.seeder';
+import { FakeProductsSeeder } from './seeds/development/fake-products.seeder';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { Product } from '@features/products/entities/product.entity';
       CustomerProfile,
       CustomerCommunicationPreference,
       CustomerWinePreference,
-      Product
+      Product,
+      Inventory
     ])
   ],
   providers: [

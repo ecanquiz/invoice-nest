@@ -5,6 +5,7 @@ import { faker } from '@faker-js/faker';
 import { BaseSeeder } from '../base-seeder.abstract';
 import { Product } from '@/features/products/entities/product.entity';
 import { Category } from '@/features/categories/entities/category.entity';
+import { Inventory } from '@/features/inventory/entities/inventory.entity';
 
 @Injectable()
 export class FakeProductsSeeder extends BaseSeeder {
@@ -15,6 +16,8 @@ export class FakeProductsSeeder extends BaseSeeder {
     private productsRepository: Repository<Product>,
     @InjectRepository(Category)
     private categoriesRepository: Repository<Category>,
+    @InjectRepository(Inventory)
+    private inventoryRepository: Repository<Inventory>,  
   ) {
     super();
   }
@@ -79,9 +82,20 @@ export class FakeProductsSeeder extends BaseSeeder {
           faker.helpers.arrayElement(['Medalla de Oro', '90+ Puntos', 'Mejor de Clase'])
         ),
         is_active: faker.datatype.boolean(0.8),
+      });      
+
+      const savedProduct = await this.productsRepository.save(product);
+
+      const inventory = this.inventoryRepository.create({
+        product_id: savedProduct.id,
+        current_stock: 0,
+        reserved_stock: 0,
+        minimum_stock: 10,
+        maximum_stock: 1000,
+        updated_by: "By seeder",
       });
 
-      await this.productsRepository.save(product);
+      await this.inventoryRepository.save(inventory);
       this.log(`Created product: ${product.name}`);
     }
 
