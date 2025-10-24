@@ -71,8 +71,10 @@ export class FakeProductsSeeder extends BaseSeeder {
         region: faker.helpers.arrayElement(regions),
         volume: 750,
         price: faker.number.float({ min: 15, max: 120, fractionDigits: 2 }),
-        image_url: faker.image.urlLoremFlickr({ category: 'wine' }),
-        images: Array.from({ length: 3 }, () => faker.image.urlLoremFlickr({ category: 'wine' })),
+        //image_url: faker.image.urlPicsumPhotos(),
+        //images: Array.from({ length: 3 }, () => faker.image.urlPicsumPhotos()),
+        image_url: `https://picsum.photos/seed/${faker.string.uuid()}/800/600`,
+        images: Array.from({ length: 3 }, () => `https://picsum.photos/seed/${faker.string.uuid()}/800/600`),
         tasting_notes: faker.lorem.sentences(2),
         food_pairing: [
           faker.helpers.arrayElement(['Carnes rojas', 'Quesos curados', 'Pasta']),
